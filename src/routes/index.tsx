@@ -2,6 +2,7 @@ import { Link, createFileRoute } from '@tanstack/react-router';
 import { getAuth, getSignInUrl, getSignUpUrl } from '@workos/authkit-tanstack-react-start';
 import { Button } from '@/components/ui/button';
 import { ModeToggle } from '@/components/mode-toggle';
+import { BLOG_URL } from '@/lib/constants';
 import { Building2, Users, Shield, CreditCard, ArrowRight, CheckCircle2 } from 'lucide-react';
 
 export const Route = createFileRoute('/')({
@@ -35,7 +36,7 @@ function Home() {
           </div>
           <div className="flex items-center gap-4">
             <Button variant="ghost" asChild>
-              <a href="/blog">Blog</a>
+              <a href={BLOG_URL} target="_blank" rel="noreferrer">Blog</a>
             </Button>
             <ModeToggle />
             <Button variant="ghost" asChild>
@@ -161,7 +162,7 @@ function AuthenticatedHome() {
           </div>
           <div className="flex items-center gap-4">
             <Button variant="ghost" asChild>
-              <a href="/blog">Blog</a>
+              <a href={BLOG_URL} target="_blank" rel="noreferrer">Blog</a>
             </Button>
             <ModeToggle />
             <Button asChild>

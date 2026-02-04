@@ -12,11 +12,35 @@ After the initial setup (<2 minutes) you'll have a working full-stack app using:
 
 ## Get started
 
-1. Clone this repository and install dependencies:
+### Quick Setup (Recommended)
+
+```bash
+# Clone and install
+git clone <repository-url>
+cd iSaaSIT
+npm install
+
+# Run the setup wizard
+npm run setup
+```
+
+The setup wizard will guide you through:
+- Environment configuration
+- WorkOS AuthKit setup
+- Convex backend configuration
+- GSD (Get Shit Done) installation for AI-assisted development
+
+### Manual Setup
+
+If you prefer to set up manually:
+
+1. Install dependencies:
 
    ```bash
    npm install
    ```
+
+   > **Note:** After `npm install`, you'll be prompted to install GSD (Get Shit Done) - a meta-prompting system for AI-assisted development. This is optional but recommended.
 
 2. Set up your environment variables:
 
@@ -59,6 +83,35 @@ After the initial setup (<2 minutes) you'll have a working full-stack app using:
    This starts both the Vite dev server (TanStack Start frontend) and Convex backend in parallel
 
 6. Open [http://localhost:3000](http://localhost:3000) to see your app
+
+## AI-Assisted Development (Optional)
+
+This project includes support for **GSD (Get Shit Done)** - a meta-prompting system for spec-driven development with AI coding assistants like Claude Code.
+
+### Install GSD
+
+```bash
+npm run setup:gsd
+```
+
+Or manually:
+```bash
+npx get-shit-done-cc@latest --claude --local
+```
+
+### GSD Commands
+
+Once installed, use these in your AI assistant:
+
+| Command | Purpose |
+|---------|---------|
+| `/gsd:map-codebase` | Analyze existing code structure |
+| `/gsd:new-project` | Initialize spec-driven development |
+| `/gsd:plan-phase 1` | Create execution plans |
+| `/gsd:execute-phase 1` | Build features with fresh context |
+| `/gsd:verify-phase 1` | Verify implementation |
+
+**Learn more**: [github.com/glittercowboy/get-shit-done](https://github.com/glittercowboy/get-shit-done)
 
 ## WorkOS AuthKit Setup
 

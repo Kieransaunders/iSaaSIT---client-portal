@@ -4,7 +4,9 @@ import starlight from '@astrojs/starlight';
 
 // https://astro.build/config
 export default defineConfig({
-  base: '/blog',
+  server: {
+    port: 4321,
+  },
   integrations: [
     starlight({
       title: 'iSaaSIT Documentation',
@@ -14,10 +16,6 @@ export default defineConfig({
       },
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/workos/template-convex-tanstack-start-authkit' },
-      ],
-      topnav: [
-        { label: 'Docs', link: '/blog/guides/introduction/' },
-        { label: 'Blog', link: '/blog/blog/' },
       ],
       sidebar: [
         {

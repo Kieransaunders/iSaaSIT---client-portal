@@ -13,17 +13,22 @@
     "url": "https://github.com/workos/template-convex-tanstack-start-authkit/issues"
   },
   "scripts": {
-    "dev": "npm-run-all --parallel dev:frontend dev:backend dev:docs",
+    "dev": "npm-run-all --parallel dev:frontend dev:backend",
     "dev:frontend": "vite dev",
     "dev:backend": "convex dev",
-    "dev:docs": "cd docs-site && npm run dev -- --port 4321",
+    "dev:all": "npm-run-all --parallel dev:frontend dev:backend dev:docs",
+    "dev:docs": "cd docs-site && npm run dev",
     "predev": "convex dev --until-success && convex dashboard",
     "build": "vite build",
     "build:docs": "cd docs-site && npm run build",
     "start": "vite start",
     "preview:docs": "cd docs-site && npm run preview",
     "format": "prettier --write .",
-    "lint": "tsc && eslint .  --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+    "lint": "tsc && eslint .  --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "postinstall": "node scripts/post-install.js",
+    "setup": "node scripts/setup.js",
+    "setup:gsd": "node scripts/setup-gsd.js",
+    "gsd:help": "echo 'Run: npm run setup:gsd' && echo 'Or manually: npx get-shit-done-cc@latest --claude --local'"
   },
   "dependencies": {
     "@convex-dev/react-query": "^0.1.0",

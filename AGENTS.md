@@ -40,6 +40,67 @@ Use the structured prompts in `.cursor/example-prompts.md` for common tasks like
 - Bug fixes
 - Refactoring
 
+### GSD: Get Shit Done
+
+This project is optimized for **GSD** - a meta-prompting and spec-driven development system that prevents context rot and enables reliable AI-assisted coding.
+
+**What GSD provides:**
+- Structured project initialization (`/gsd:new-project`)
+- Research → Plan → Execute → Verify workflow
+- Parallel execution with fresh context windows
+- Automatic documentation generation (PROJECT.md, REQUIREMENTS.md, ROADMAP.md)
+
+**Essential GSD Commands:**
+
+| Command | When to Use |
+|---------|-------------|
+| `/gsd:map-codebase` | Starting work on existing code - analyzes structure |
+| `/gsd:new-project` | Starting a new project or major feature |
+| `/gsd:discuss-phase <phase>` | Before planning - clarify implementation preferences |
+| `/gsd:plan-phase <phase>` | Create detailed execution plans |
+| `/gsd:execute-phase <phase>` | Execute plans with fresh context |
+| `/gsd:verify-phase <phase>` | Verify implementation meets goals |
+| `/gsd:checkpoint` | Review progress and decide next steps |
+
+**GSD Principles for This Project:**
+
+1. **Vertical Slices** - Build features end-to-end, not layer by layer
+2. **Spec Before Code** - Document requirements in `.planning/` before implementation
+3. **Fresh Context** - Use small, focused plans executed in fresh context windows
+4. **Verify Early** - Check against goals after each phase
+5. **Ship Working** - Prefer working code over perfect abstraction
+
+**Installation:**
+
+```bash
+# For local project use (recommended)
+npx get-shit-done-cc@latest --claude --local
+
+# Or globally
+npx get-shit-done-cc@latest --claude --global
+
+# Verify
+/gsd:help
+```
+
+**GSD Project Structure:**
+
+```
+.planning/
+├── PROJECT.md              # Project overview and goals
+├── REQUIREMENTS.md         # Extracted requirements
+├── ROADMAP.md              # Execution phases
+├── STATE.md                # Current progress
+├── research/               # Research findings
+├── [phase]-CONTEXT.md      # Phase preferences
+├── [phase]-RESEARCH.md     # Phase research
+├── [phase]-[N]-PLAN.md     # Execution plans
+├── [phase]-[N]-SUMMARY.md  # Execution summaries
+└── [phase]-VERIFICATION.md # Phase verification
+```
+
+**Reference:** [github.com/glittercowboy/get-shit-done](https://github.com/glittercowboy/get-shit-done)
+
 ## Project Overview
 
 **iSaaSIT** is an open-source SaaS starter kit designed for agencies and freelancers who need a repeatable client project template. It provides a multi-tenant foundation where:
@@ -308,6 +369,7 @@ Place the route file under `routes/_authenticated/` or add protection to an exis
 - [TanStack Router](https://tanstack.com/router)
 - [WorkOS AuthKit](https://workos.com/docs/authkit)
 - [Tailwind CSS v4](https://tailwindcss.com/)
+- [GSD System](https://github.com/glittercowboy/get-shit-done) - Meta-prompting for AI-assisted development
 
 ## Current Status
 

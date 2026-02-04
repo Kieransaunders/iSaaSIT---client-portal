@@ -9,6 +9,7 @@ import {
   UserCircle,
   BookOpen,
 } from "lucide-react";
+import { BLOG_URL } from "@/lib/constants";
 import {
   Sidebar,
   SidebarContent,
@@ -67,9 +68,9 @@ const adminNavItems = [
 const resourceNavItems = [
   {
     title: "Blog",
-    url: "/blog",
+    url: BLOG_URL,
     icon: BookOpen,
-    external: false,
+    external: true,
   },
 ];
 
