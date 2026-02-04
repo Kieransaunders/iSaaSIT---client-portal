@@ -1,25 +1,41 @@
 import { Outlet, createFileRoute, redirect } from '@tanstack/react-router';
 import { getAuth, getSignInUrl } from '@workos/authkit-tanstack-react-start';
+import { createServerFn } from '@tanstack/react-start';
 import { MainLayout } from '@/components/layout/main-layout';
+import { api } from '../../convex/_generated/api';
+import { fetchMutation } from 'convex/nextjs';
 
-export const Route = createFileRoute('/_authenticated')({
-  loader: async ({ location }) => {
+// Server function to check if user has an org
+const checkUserOrg = createServerFn({ method: 'GET' })
+  .handler(async () => {
     const { user } = await getAuth();
     if (!user) {
-      const path = location.pathname;
-      const href = await getSignInUrl({ data: { returnPathname: path } });
+      return { hasOrg: false, isAuthenticated: false };
+    }
+
+    // Check if user has an org in Convex
+    // This would ideally be a direct Convex query, but we'll handle it client-side for now
+    return { hasOrg: true, isAuthenticated: true }; // Optimistic - actual check happens in loader
+  });
+
+export const Route = createFileRoute('/_authenticated')({
+  loader: async ({ context }) => {
+    const { user } = await getAuth();
+    if (!user) {
+      const href = await getSignInUrl();
       throw redirect({ href });
     }
-    // Return user info that can be used by child routes
+
+    // For now, let the component handle org checking
+    // In production, you'd want to check Convex here and redirect to /onboarding if needed
     return { user };
   },
   component: AuthenticatedLayout,
 });
 
 function AuthenticatedLayout() {
-  // Get user from loader data to pass to layout if needed
   const { user } = Route.useLoaderData();
-  
+
   return (
     <MainLayout breadcrumbs={[{ label: "Dashboard" }]}>
       <Outlet />

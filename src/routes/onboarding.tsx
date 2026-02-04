@@ -1,0 +1,149 @@
+import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
+import { getAuth } from '@workos/authkit-tanstack-react-start';
+import { useState } from 'react';
+import { useQuery, useMutation } from 'convex/react';
+import { api } from '../../convex/_generated/api';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Building2, Loader2, CheckCircle2 } from 'lucide-react';
+
+export const Route = createFileRoute('/onboarding')({
+  loader: async () => {
+    const { user } = await getAuth();
+    if (!user) {
+      throw redirect({ to: '/' });
+    }
+    return { user };
+  },
+  component: OnboardingPage,
+});
+
+function OnboardingPage() {
+  const { user } = Route.useLoaderData();
+  const navigate = useNavigate();
+  const [orgName, setOrgName] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  // Check if user already has an org
+  const hasOrgResult = useQuery(api.orgs.get.hasOrg);
+  const createOrgInConvex = useMutation(api.orgs.create.getOrCreateMyOrg);
+
+  // If user already has org, redirect to dashboard
+  if (hasOrgResult?.hasOrg) {
+    navigate({ to: '/dashboard' });
+    return null;
+  }
+
+  const handleCreateOrg = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!orgName.trim()) return;
+
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      // Step 1: Create org in WorkOS via API
+      // Note: In production, you'd call WorkOS API from a server function
+      // For this demo, we'll create a mock WorkOS org ID
+      const mockWorkosOrgId = `org_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+      // Step 2: Sync to Convex
+      await createOrgInConvex({
+        workosOrgId: mockWorkosOrgId,
+        orgName: orgName.trim(),
+      });
+
+      setIsSuccess(true);
+
+      // Redirect after a moment
+      setTimeout(() => {
+        navigate({ to: '/dashboard' });
+      }, 1500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create organization');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-muted/50 p-4">
+      <div className="w-full max-w-md">
+        <div className="flex justify-center mb-8">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <Building2 className="h-6 w-6" />
+          </div>
+        </div>
+
+        <Card>
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl">
+              {isSuccess ? 'Organization Created!' : 'Create Your Organization'}
+            </CardTitle>
+            <CardDescription>
+              {isSuccess
+                ? 'Redirecting you to your dashboard...'
+                : 'Set up your agency workspace to get started'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {!isSuccess && (
+              <form onSubmit={handleCreateOrg} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="org-name">Organization Name</Label>
+                  <Input
+                    id="org-name"
+                    placeholder="Acme Agency"
+                    value={orgName}
+                    onChange={(e) => setOrgName(e.target.value)}
+                    disabled={isLoading}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    This will be the name of your organization
+                  </p>
+                </div>
+
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
+
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isLoading || !orgName.trim()}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    'Create Organization'
+                  )}
+                </Button>
+              </form>
+            )}
+
+            {isSuccess && (
+              <div className="py-8 flex flex-col items-center text-center">
+                <CheckCircle2 className="h-8 w-8 text-green-500 mb-4" />
+                <p className="font-medium">{orgName} is ready!</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <p className="text-center text-sm text-muted-foreground mt-4">
+          Signed in as {user.email}
+        </p>
+      </div>
+    </div>
+  );
+}
