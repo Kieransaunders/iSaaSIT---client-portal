@@ -1,6 +1,8 @@
-# Welcome to your Convex + TanStack Start + WorkOS AuthKit app
+# iSaaSIT - Open Source SaaS Starter Kit
 
-This is a [Convex](https://convex.dev/) project using WorkOS AuthKit for authentication.
+A multi-tenant SaaS starter kit for agencies and freelancers. Built with Convex, TanStack Start, and WorkOS AuthKit.
+
+![iSaaSIT Homepage](screenshots/homepage.png)
 
 After the initial setup (<2 minutes) you'll have a working full-stack app using:
 
