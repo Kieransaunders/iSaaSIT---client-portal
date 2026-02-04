@@ -1,8 +1,20 @@
-# iSaaSIT - Open Source SaaS Starter Kit
+# iSaaSIT 🚀
 
-A multi-tenant SaaS starter kit for agencies and freelancers. Built with Convex, TanStack Start, and WorkOS AuthKit.
+**A free, open-source SaaS starter kit for agencies and freelancers. Built with Convex, TanStack Start, and WorkOS AuthKit.**
 
 ![iSaaSIT Homepage](screenshots/homepage.png)
+
+## What's inside?
+
+This template gives you everything you need to launch a multi-tenant SaaS in record time:
+
+✅ **Fully open-source** - No proprietary code, completely free to use and modify  
+✅ **Multi-tenant architecture** - Manage multiple clients with proper data isolation  
+✅ **Authentication ready** - Enterprise-grade auth with WorkOS AuthKit + social login  
+✅ **Role-based access** - Admin, Staff, and Client roles built-in  
+✅ **Modern stack** - React 19, TanStack Start, Convex, Tailwind CSS v4  
+✅ **Type-safe** - End-to-end TypeScript with inferred types from backend to frontend  
+✅ **AI-Ready** - Cursor rules and GSD integration for AI-assisted development  
 
 After the initial setup (<2 minutes) you'll have a working full-stack app using:
 
