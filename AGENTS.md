@@ -1,0 +1,258 @@
+# AGENTS.md - AI Coding Agent Guide
+
+This document provides essential context for AI coding agents working on the iSaaSIT project.
+
+## Project Overview
+
+**iSaaSIT** is an open-source SaaS starter kit designed for agencies and freelancers who need a repeatable client project template. It provides a multi-tenant foundation where:
+- An **agency (Org)** manages multiple **client companies (Customers)**
+- Role-based data isolation ensures proper access control
+- Billing with usage caps enforces plan limits
+- A client portal enables customer self-service
+
+**Base Template:** Fork of `get-convex/workos-authkit` (TanStack Start + Convex + WorkOS AuthKit)
+
+**License:** MIT
+
+## Technology Stack
+
+### Frontend
+- **React 19** - UI framework
+- **TanStack Start** - Full-stack React framework with SSR support
+- **TanStack Router** - File-based routing with type-safe navigation
+- **TanStack React Query** - Server state management with Convex integration
+- **Tailwind CSS v4** - Utility-first styling
+- **Vite 7** - Build tool and dev server
+
+### Backend
+- **Convex** - Serverless backend with real-time database
+- **WorkOS AuthKit** - Authentication via JWT tokens
+- **TypeScript 5.9** - Type-safe development
+
+### Planned Integrations (Not Yet Implemented)
+- **Lemon Squeezy** - Billing and subscriptions (Merchant of Record)
+- **shadcn/ui** - Component library
+
+## Project Structure
+
+```
+/
+├── src/                          # Frontend source code
+│   ├── routes/                   # File-based routes (TanStack Router)
+│   │   ├── __root.tsx           # Root layout with auth setup
+│   │   ├── index.tsx            # Home page (public)
+│   │   ├── callback.tsx         # WorkOS OAuth callback handler
+│   │   ├── _authenticated.tsx   # Protected route layout
+│   │   └── _authenticated/
+│   │       └── authenticated.tsx # Example protected page
+│   ├── router.tsx               # Router configuration with Convex + WorkOS
+│   ├── start.ts                 # TanStack Start configuration
+│   ├── app.css                  # Global styles (Tailwind v4)
+│   ├── routeTree.gen.ts         # Auto-generated route tree
+│   └── vite-env.d.ts            # Vite environment types
+├── convex/                       # Backend Convex functions
+│   ├── schema.ts                # Database schema
+│   ├── myFunctions.ts           # Example queries/mutations/actions
+│   ├── auth.config.ts           # WorkOS JWT auth configuration
+│   ├── _generated/              # Auto-generated Convex types
+│   └── README.md                # Convex documentation
+├── .planning/                   # Project planning documents
+│   ├── PROJECT.md               # Detailed project requirements
+│   └── config.json              # Planning configuration
+├── package.json                 # Dependencies and scripts
+├── vite.config.ts               # Vite configuration
+├── convex.json                  # Convex deployment config with AuthKit
+├── tsconfig.json                # TypeScript configuration
+└── .env.local.example           # Environment variables template
+```
+
+## Development Commands
+
+```bash
+# Start development (runs frontend + backend in parallel)
+npm run dev
+
+# Start only frontend dev server
+npm run dev:frontend
+
+# Start only Convex backend
+npm run dev:backend
+
+# Build for production
+npm run build
+
+# Start production server
+npm run start
+
+# Run type checking and linting
+npm run lint
+
+# Format code with Prettier
+npm run format
+
+# Initialize Convex (first-time setup)
+npx convex dev
+```
+
+## Architecture Details
+
+### Authentication Flow
+
+1. **WorkOS AuthKit** handles authentication via redirect-based OAuth
+2. JWT tokens are validated by Convex using `auth.config.ts`
+3. Two auth hooks available:
+   - `useAuth()` - For client components
+   - `getAuth()` - For server loaders
+4. Protected routes use the `_authenticated` layout with loader-based guards
+
+### Route Protection Pattern
+
+```typescript
+// In routes/_authenticated.tsx
+export const Route = createFileRoute('/_authenticated')({
+  loader: async ({ location }) => {
+    const { user } = await getAuth();
+    if (!user) {
+      const href = await getSignInUrl({ data: { returnPathname: location.pathname } });
+      throw redirect({ href });
+    }
+  },
+  component: () => <Outlet />,
+});
+```
+
+### Convex Integration
+
+The router integrates Convex with React Query and WorkOS:
+
+```typescript
+// In router.tsx
+const convex = new ConvexReactClient(CONVEX_URL);
+const convexQueryClient = new ConvexQueryClient(convex);
+
+// Wrapped with AuthKitProvider and ConvexProviderWithAuth
+```
+
+### File-Based Routing Conventions
+
+- `routes/index.tsx` → `/`
+- `routes/callback.tsx` → `/callback`
+- `routes/_authenticated.tsx` → Layout wrapper (no URL segment)
+- `routes/_authenticated/authenticated.tsx` → `/authenticated`
+
+Files starting with `_` are layout routes that don't create URL segments.
+
+## Data Model (Planned)
+
+### Core Entities
+
+| Entity | Description | Managed By |
+|--------|-------------|------------|
+| **Org** | Agency organization | WorkOS (org + membership) + Convex (subscription data) |
+| **Customer** | Agency's client company | Convex table (linked to orgId) |
+| **User** | End user | WorkOS; linked to customerId if role = Client |
+| **StaffCustomerAssignment** | Maps Staff to accessible Customers | Convex table |
+
+### Role Definitions
+
+| Role | Visibility | Capabilities |
+|------|------------|--------------|
+| **Admin** | All org data | Billing, invites, full access |
+| **Staff** | Assigned Customers only | Standard access within scope |
+| **Client** | Own Customer only | Limited access within scope |
+
+### Billing Model
+
+- **Level:** Organization (not individual users)
+- **Provider:** Lemon Squeezy (planned)
+- **Caps:** maxCustomers, maxStaff, maxClients synced from plan metadata
+
+## Code Style Guidelines
+
+### Prettier Configuration
+- Single quotes
+- Trailing commas (all)
+- Print width: 120
+- Semicolons: true
+
+### ESLint
+- Extends `@tanstack/eslint-config`
+- Includes `@convex-dev/eslint-plugin`
+- Generated files (`convex/_generated`, `routeTree.gen.ts`) are ignored
+
+### TypeScript
+- Strict mode enabled
+- Path aliases: `@/*` and `~/*` both map to `./src/*`
+- Module resolution: Bundler
+
+## Environment Variables
+
+Required in `.env.local`:
+
+```bash
+# WorkOS AuthKit Configuration
+WORKOS_CLIENT_ID=client_xxx
+WORKOS_API_KEY=sk_test_xxx
+WORKOS_COOKIE_PASSWORD=xxx  # Min 32 characters
+WORKOS_REDIRECT_URI=http://localhost:3000/callback
+
+# Convex Configuration
+VITE_CONVEX_URL=https://xxx.convex.cloud
+```
+
+## Important Files to Know
+
+### Auto-Generated Files (Do Not Edit)
+- `convex/_generated/*` - Generated by `npx convex dev`
+- `src/routeTree.gen.ts` - Generated by TanStack Router
+
+### Key Configuration Files
+- `convex.json` - Convex deployment settings with AuthKit integration
+- `convex/auth.config.ts` - JWT validation for WorkOS tokens
+- `vite.config.ts` - Vite + TanStack Start + React configuration
+
+## Testing Strategy
+
+**Note:** No test suite is currently implemented. Tests should be added as the project matures.
+
+## Common Development Tasks
+
+### Adding a New Route
+
+1. Create a file in `src/routes/` following the file-based routing convention
+2. Export `Route` using `createFileRoute()`
+3. The route tree will be auto-generated on next dev server start
+
+### Adding a Convex Function
+
+1. Add queries/mutations/actions to `convex/myFunctions.ts` or create new files
+2. Import from `./_generated/server` for `query`, `mutation`, `action`
+3. Use `v` from `convex/values` for argument validation
+4. Run `npx convex dev` to deploy and regenerate types
+
+### Protecting a Route
+
+Place the route file under `routes/_authenticated/` or add protection to an existing layout.
+
+## Deployment Notes
+
+- **Primary Target:** Netlify
+- **Convex:** Deployed separately via `npx convex deploy`
+- **Environment:** Configure `convex.json` for dev/preview/prod AuthKit settings
+
+## External Documentation
+
+- [Convex Docs](https://docs.convex.dev/)
+- [TanStack Start](https://tanstack.com/start)
+- [TanStack Router](https://tanstack.com/router)
+- [WorkOS AuthKit](https://workos.com/docs/authkit)
+- [Tailwind CSS v4](https://tailwindcss.com/)
+
+## Current Status
+
+As of the last update, the following features are:
+- ✅ **Implemented:** User sign-in via WorkOS AuthKit, authenticated route protection, Convex backend with JWT validation
+- 🚧 **In Progress:** Organization creation and management, customer management, role-based access control
+- ⏳ **Planned:** Lemon Squeezy billing integration, shadcn/ui components, usage cap enforcement
+
+See `.planning/PROJECT.md` for detailed requirements and progress tracking.

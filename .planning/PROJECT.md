@@ -90,5 +90,11 @@ Agencies can spin up new client projects with proper data isolation, billing enf
 | Roles in WorkOS not Convex | Single source of truth, WorkOS handles membership | — Pending |
 | shadcn/ui for components | Accessible, customizable, works with Tailwind | — Pending |
 
+## Repository
+
+**GitHub:** https://github.com/Kieransaunders/iSaaSIT.git
+
+**License:** MIT
+
 ---
 *Last updated: 2025-02-04 after initialization*
