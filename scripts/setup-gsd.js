@@ -14,8 +14,8 @@
  * Reference: https://github.com/glittercowboy/get-shit-done
  */
 
-const { execSync } = require('child_process');
-const fs = require('fs');
+import { execSync } from 'child_process';
+import fs from 'fs';
 
 const CYAN = '\x1b[36m';
 const GREEN = '\x1b[32m';

@@ -12,10 +12,10 @@
  * Usage: npm run setup
  */
 
-const { execSync } = require('child_process');
-const fs = require('fs');
-const readline = require('readline');
-const path = require('path');
+import { execSync } from 'child_process';
+import fs from 'fs';
+import readline from 'readline';
+import path from 'path';
 
 const CYAN = '\x1b[36m';
 const GREEN = '\x1b[32m';

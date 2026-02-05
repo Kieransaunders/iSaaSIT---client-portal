@@ -9,9 +9,9 @@
  * Users can skip this by setting SKIP_GSD_SETUP=1
  */
 
-const { execSync } = require('child_process');
-const fs = require('fs');
-const readline = require('readline');
+import { execSync } from 'child_process';
+import fs from 'fs';
+import readline from 'readline';
 
 const CYAN = '\x1b[36m';
 const GREEN = '\x1b[32m';
