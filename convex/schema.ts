@@ -8,6 +8,8 @@ export default defineSchema({
     workosOrgId: v.string(),
     // Organization name (from WorkOS)
     name: v.string(),
+    // Billing email (stored in WorkOS metadata)
+    billingEmail: v.optional(v.string()),
     // Subscription data from Lemon Squeezy
     subscriptionId: v.optional(v.string()),
     subscriptionStatus: v.optional(v.union(
