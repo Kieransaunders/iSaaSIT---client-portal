@@ -4,9 +4,21 @@
 
 ## Quick Links
 
-- **Cursor Rules**: `.cursor/rules/*.mdc` - Detailed patterns for Cursor IDE
-- **Example Prompts**: `.cursor/example-prompts.md` - Copy-paste prompts for common tasks
-- **Full Guide**: `AGENTS.md` - Comprehensive project documentation
+| Resource | Purpose |
+|----------|---------|
+| **GSD (Get Shit Done)** | Meta-prompting system for spec-driven development - see below |
+| **Cursor Rules** | `.cursor/rules/*.mdc` - Detailed patterns for Cursor IDE |
+| **Claude Code Skills** | `.claude/skills/*/` - Specialized skills for AI assistants |
+| **Example Prompts** | `.cursor/example-prompts.md` - Copy-paste prompts for common tasks |
+| **AGENTS.md** | Comprehensive project documentation |
+| **TROUBLESHOOTING.md** | Common errors and solutions |
+| **SECURITY.md** | Security best practices |
+| **MIGRATIONS.md** | Database migration patterns |
+| **DEPLOYMENT.md** | Production deployment guide |
+| **TESTING.md** | Testing patterns and strategies |
+| **API.md** | API conventions and patterns |
+| **`docs/CONVEX_LLMS.md`** | Local copy of Convex LLM documentation |
+| **CONTRIBUTING.md** | How to contribute to the project |
 
 ## Technology Stack
 
@@ -15,13 +27,81 @@
 - **Auth**: WorkOS AuthKit (JWT-based)
 - **Planned**: Lemon Squeezy (billing), shadcn/ui (components)
 
+## GSD: Get Shit Done
+
+This project uses **GSD** - a meta-prompting and spec-driven development system for AI-assisted coding.
+
+### What is GSD?
+
+GSD (by [@TACHES](https://github.com/glittercowboy/get-shit-done)) is a context engineering system that:
+- Prevents context rot as conversations grow
+- Structures development into research → plan → execute → verify cycles
+- Creates reusable project documentation (PROJECT.md, REQUIREMENTS.md, ROADMAP.md)
+- Enables parallel execution with fresh context windows
+
+### Key Commands
+
+Once GSD is installed, use these slash commands in Claude Code:
+
+| Command | Purpose |
+|---------|---------|
+| `/gsd:help` | Show all available commands |
+| `/gsd:map-codebase` | Analyze existing codebase structure |
+| `/gsd:new-project` | Initialize new project with spec-driven approach |
+| `/gsd:discuss-phase <phase>` | Deep-dive into implementation preferences |
+| `/gsd:plan-phase <phase>` | Research and create execution plans |
+| `/gsd:execute-phase <phase>` | Execute plans with fresh context |
+| `/gsd:verify-phase <phase>` | Verify implementation against goals |
+| `/gsd:checkpoint` | Review state and decide next steps |
+
+### GSD Principles
+
+When working on this project, follow GSD principles:
+
+1. **Vertical Slices** - Build features end-to-end, not layer by layer
+2. **Spec-Driven** - Document requirements before implementation
+3. **Fresh Context** - Break work into small plans executed in fresh windows
+4. **Verify Early** - Check against goals after each phase
+5. **Ship Working** - Prefer working code over perfect abstraction
+
+### Installation
+
+```bash
+# Install GSD for Claude Code (local to this project)
+npx get-shit-done-cc@latest --claude --local
+
+# Or install globally
+npx get-shit-done-cc@latest --claude --global
+
+# Verify installation
+/gsd:help
+```
+
+### Project Structure with GSD
+
+```
+.planning/                  # GSD planning directory
+├── PROJECT.md             # Project overview and goals
+├── REQUIREMENTS.md        # Extracted requirements
+├── ROADMAP.md             # Execution phases
+├── STATE.md               # Current progress
+├── research/              # Research findings
+└── [phase]-CONTEXT.md     # Phase-specific context
+    [phase]-RESEARCH.md
+    [phase]-[N]-PLAN.md
+    [phase]-[N]-SUMMARY.md
+    [phase]-VERIFICATION.md
+```
+
+**Reference**: [github.com/glittercowboy/get-shit-done](https://github.com/glittercowboy/get-shit-done)
+
 ## Project Structure
 
 ```
 src/routes/           # File-based routes (TanStack Router)
 convex/               # Backend Convex functions
 .cursor/rules/        # AI coding rules
-.planning/            # Project requirements
+.planning/            # Project requirements (GSD)
 ```
 
 ## Core Patterns
@@ -99,14 +179,37 @@ npx convex dev       # Initialize/regenerate Convex types
 - `convex/_generated/*`
 - `src/routeTree.gen.ts`
 
+## Claude Code Skills
+
+This project includes specialized skills for Claude Code and compatible AI assistants in `.claude/skills/`:
+
+| Skill | Purpose | Source |
+|-------|---------|--------|
+| **convex** | Backend development with Convex (queries, mutations, schemas) | Project |
+| **tanstack** | TanStack Start, Router, and Query patterns | Project |
+| **tailwind-v4** | Tailwind CSS v4 styling and configuration | Project |
+| **shadcn-ui** | shadcn/ui component usage and composition | Project |
+| **astro-starlight** | Documentation site with Starlight/Astro | Project |
+| **ui-ux-pro-max** | UI/UX design intelligence (50+ styles, 21 palettes, 50 font pairings) | [nextlevelbuilder/ui-ux-pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) |
+
+These skills provide:
+- **Domain-specific knowledge** - Detailed patterns for each technology
+- **Best practices** - Coding conventions and common patterns
+- **Troubleshooting** - Solutions to common issues
+- **Quick references** - Code snippets and examples
+
+When working with this codebase, AI assistants should reference the relevant skill files for technology-specific guidance.
+
 ## External Documentation
 
-- [Convex](https://docs.convex.dev/)
+- [Convex](https://docs.convex.dev/) | [Convex LLM Reference](https://docs.convex.dev/llms.txt) - AI-friendly reference (also available locally at `docs/CONVEX_LLMS.md`)
 - [TanStack Start](https://tanstack.com/start)
 - [TanStack Router](https://tanstack.com/router)
 - [WorkOS AuthKit](https://workos.com/docs/authkit)
 - [Tailwind v4](https://tailwindcss.com/)
+- [GSD System](https://github.com/glittercowboy/get-shit-done)
+- [UI/UX Pro Max Skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill)
 
 ---
 
-*For detailed patterns, see `.cursor/rules/*.mdc` files*
+*For detailed patterns, see `.cursor/rules/*.mdc` and `.claude/skills/*/SKILL.md` files*

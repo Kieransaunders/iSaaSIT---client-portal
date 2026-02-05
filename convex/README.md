@@ -3,6 +3,8 @@
 Write your Convex functions here.
 See https://docs.convex.dev/functions for more.
 
+> **For AI Assistants**: Reference the [Convex LLM documentation](https://docs.convex.dev/llms.txt) for detailed API info when working with queries, mutations, actions, schemas, and database operations.
+
 A query function that takes two arguments looks like:
 
 ```ts

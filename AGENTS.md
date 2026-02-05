@@ -7,9 +7,16 @@ This document provides essential context for AI coding agents working on the iSa
 | Resource | Location | Purpose |
 |----------|----------|---------|
 | **Project Overview** | `LLM.txt` (root) | Quick context for any LLM |
-| **Detailed Rules** | `.cursor/rules/*.mdc` | Specific patterns by topic |
+| **AI Rules** | `.cursor/rules/*.mdc` | Specific patterns by topic |
 | **Example Prompts** | `.cursor/example-prompts.md` | Copy-paste prompts for tasks |
 | **Requirements** | `.planning/PROJECT.md` | Feature requirements & status |
+| **Troubleshooting** | `TROUBLESHOOTING.md` | Common errors and fixes |
+| **Security** | `SECURITY.md` | Security best practices |
+| **Migrations** | `MIGRATIONS.md` | Database migration patterns |
+| **Deployment** | `DEPLOYMENT.md` | Production deployment guide |
+| **Testing** | `TESTING.md` | Testing patterns and strategies |
+| **API Conventions** | `API.md` | API patterns and conventions |
+| **Contributing** | `CONTRIBUTING.md` | How to contribute |
 
 ## AI-Assisted Development
 
@@ -30,7 +37,20 @@ The `.cursor/rules/*.mdc` files provide contextual guidance based on file type:
 | `07-billing-integration.mdc` | Lemon Squeezy patterns | `convex/**/*.ts` |
 | `08-development-workflow.mdc` | Common tasks, debugging | All files |
 
-### For Claude / Other LLMs
+### For Claude Code
+
+Located in `.claude/skills/*/`, these provide domain-specific guidance:
+
+| Skill | Description |
+|-------|-------------|
+| `convex/` | Backend development with Convex (queries, mutations, schemas) |
+| `tanstack/` | TanStack Start, Router, and Query patterns |
+| `tailwind-v4/` | Tailwind CSS v4 styling and theming |
+| `shadcn-ui/` | shadcn/ui component usage |
+| `astro-starlight/` | Documentation site development |
+| `ui-ux-pro-max/` | UI/UX design intelligence (50+ styles, 21 palettes, 50 font pairings) |
+
+**Note:** The `convex.skill` file in the project root is a packaged ZIP archive of the convex skill, used by other AI tools (e.g., Windsurf). It contains the same content as `.claude/skills/convex/`.
 
 Use the structured prompts in `.cursor/example-prompts.md` for common tasks like:
 - Initial project setup / PRD
@@ -362,7 +382,21 @@ Place the route file under `routes/_authenticated/` or add protection to an exis
 - **Convex:** Deployed separately via `npx convex deploy`
 - **Environment:** Configure `convex.json` for dev/preview/prod AuthKit settings
 
-## External Documentation
+## Additional Documentation
+
+### Development Guides
+
+| Document | When to Read |
+|----------|--------------|
+| `TROUBLESHOOTING.md` | When encountering errors or issues |
+| `SECURITY.md` | When implementing auth, authorization, or security features |
+| `MIGRATIONS.md` | When modifying database schema |
+| `DEPLOYMENT.md` | When deploying to production |
+| `TESTING.md` | When adding tests or testing features |
+| `API.md` | When designing APIs or Convex functions |
+| `CONTRIBUTING.md` | When contributing to the project |
+
+### External Documentation
 
 - [Convex Docs](https://docs.convex.dev/)
 - [TanStack Start](https://tanstack.com/start)

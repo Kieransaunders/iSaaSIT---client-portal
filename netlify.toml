@@ -1,0 +1,33 @@
+[build]
+  command = "npm run build:combined"
+  publish = "dist"
+
+# Blog redirects: /blog/* -> /docs/blog/*
+# This makes the blog accessible at domain.com/blog while it's built at /docs/blog
+[[redirects]]
+  from = "/blog/*"
+  to = "/docs/blog/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/blog"
+  to = "/docs/blog"
+  status = 301
+
+# SPA fallback for TanStack Start app
+# All routes not matching static files should be handled by the main app
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Headers for caching
+[[headers]]
+  for = "/docs/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

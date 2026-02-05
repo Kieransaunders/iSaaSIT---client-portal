@@ -4,7 +4,66 @@ Use these prompts as starting points for AI-assisted development.
 
 ---
 
-## Initial Setup / PRD Prompt
+## Using GSD (Get Shit Done)
+
+GSD is a meta-prompting system for spec-driven development. It structures AI-assisted coding into research → plan → execute → verify cycles.
+
+### Quick Start with GSD
+
+```
+I'm working on the iSaaSIT project. Please use GSD methodology.
+
+First, map the codebase to understand the current structure, then help me plan and implement [feature].
+
+Start with: /gsd:map-codebase
+```
+
+### GSD New Project / Feature
+
+```
+I want to implement [feature] for iSaaSIT using GSD methodology.
+
+Context:
+- iSaaSIT is a multi-tenant SaaS for agencies
+- Tech stack: TanStack Start + Convex + WorkOS AuthKit
+- Current status: [describe current state]
+
+Please use GSD workflow:
+1. /gsd:new-project (if new) or /gsd:map-codebase (if existing)
+2. /gsd:discuss-phase 1
+3. /gsd:plan-phase 1
+4. /gsd:execute-phase 1
+5. /gsd:verify-phase 1
+
+Requirements:
+- [Requirement 1]
+- [Requirement 2]
+
+Follow iSaaSIT patterns from:
+- .cursor/rules/02-convex-patterns.mdc
+- .cursor/rules/05-multi-tenancy.mdc
+```
+
+### GSD Phase Execution
+
+```
+Let's proceed with /gsd:[action]-phase [phase-number] for [feature].
+
+Reference the phase context in .planning/[phase]-CONTEXT.md
+and the requirements in .planning/REQUIREMENTS.md.
+
+Follow iSaaSIT coding patterns and ensure:
+- Proper TypeScript types
+- Role-based access control
+- Multi-tenant data isolation
+- Convex best practices
+```
+
+---
+
+## Standard Prompts (Without GSD)
+
+### Initial Setup / PRD Prompt
 
 ```
 I want to build a [type of SaaS] using iSaaSIT, an open-source SaaS starter kit.
@@ -35,9 +94,7 @@ Reference docs:
 - Routing: .cursor/rules/03-tanstack-router.mdc
 ```
 
----
-
-## Feature Implementation Prompt
+### Feature Implementation Prompt
 
 ```
 From the approved PRD, implement [feature name] following these steps:
@@ -63,9 +120,7 @@ Reference:
 - UI: .cursor/rules/06-ui-components.mdc
 ```
 
----
-
-## Convex Function Prompt
+### Convex Function Prompt
 
 ```
 Create Convex functions for [feature] with these requirements:
@@ -88,9 +143,7 @@ Requirements:
 Reference: .cursor/rules/02-convex-patterns.mdc
 ```
 
----
-
-## Route/Page Prompt
+### Route/Page Prompt
 
 ```
 Create a new route/page for [feature] at [path].
@@ -109,9 +162,7 @@ Page should include:
 Reference: .cursor/rules/03-tanstack-router.mdc
 ```
 
----
-
-## UI Component Prompt
+### UI Component Prompt
 
 ```
 Create a [component name] component for the [feature] feature.
@@ -128,9 +179,7 @@ Style with Tailwind CSS v4 using existing project patterns.
 Reference: .cursor/rules/06-ui-components.mdc
 ```
 
----
-
-## Auth Integration Prompt
+### Auth Integration Prompt
 
 ```
 Implement [feature] with proper authentication:
@@ -149,9 +198,7 @@ Follow WorkOS AuthKit patterns for:
 Reference: .cursor/rules/04-authentication.mdc
 ```
 
----
-
-## Multi-Tenancy Prompt
+### Multi-Tenancy Prompt
 
 ```
 Implement [feature] with proper multi-tenancy:
@@ -171,9 +218,7 @@ Include:
 Reference: .cursor/rules/05-multi-tenancy.mdc
 ```
 
----
-
-## Billing Integration Prompt
+### Billing Integration Prompt
 
 ```
 Integrate Lemon Squeezy billing for [feature].
@@ -192,9 +237,7 @@ Include:
 Reference: .cursor/rules/07-billing-integration.mdc
 ```
 
----
-
-## Bug Fix Prompt
+### Bug Fix Prompt
 
 ```
 Fix this bug: [describe the issue]
@@ -221,9 +264,7 @@ Check for:
 Reference relevant patterns in .cursor/rules/
 ```
 
----
-
-## Refactoring Prompt
+### Refactoring Prompt
 
 ```
 Refactor [existing code] to follow iSaaSIT patterns:
@@ -244,9 +285,7 @@ Keep existing functionality while improving code quality.
 Reference: .cursor/rules/02-convex-patterns.mdc
 ```
 
----
-
-## Schema Update Prompt
+### Schema Update Prompt
 
 ```
 Update the Convex schema to support [feature].
@@ -266,9 +305,7 @@ Follow schema patterns from .cursor/rules/02-convex-patterns.mdc
 After updating, explain what migration will be needed.
 ```
 
----
-
-## Testing Prompt
+### Testing Prompt
 
 ```
 Create a testing plan for [feature]:
@@ -293,9 +330,7 @@ Verify:
 - Error handling
 ```
 
----
-
-## Performance Optimization Prompt
+### Performance Optimization Prompt
 
 ```
 Optimize [feature] for better performance:
@@ -357,6 +392,14 @@ Fix TypeScript errors in [file]:
 
 ## Tips for Best Results
 
+### With GSD
+1. **Start with map-codebase** - Let GSD understand your codebase first
+2. **Use discuss-phase** - Clarify requirements before planning
+3. **Trust the workflow** - Don't skip phases; each has a purpose
+4. **Review plans before executing** - Plans are prompts, review them
+5. **Verify after executing** - Check that goals were met
+
+### Without GSD
 1. **Be specific** - Include exact file paths, function names, requirements
 2. **Reference rules** - Point to relevant `.cursor/rules/*.mdc` files
 3. **Provide context** - Explain what currently exists and what you need
@@ -369,3 +412,4 @@ Fix TypeScript errors in [file]:
 2. Review relevant `.cursor/rules/*.mdc` files
 3. Check `AGENTS.md` for project context
 4. Try the development commands in `.cursor/rules/08-development-workflow.mdc`
+5. **With GSD**: Run `/gsd:checkpoint` to review state
