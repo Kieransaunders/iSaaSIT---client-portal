@@ -1,8 +1,8 @@
 // URLs for external resources
 export const BLOG_URL = import.meta.env.DEV 
   ? 'http://localhost:4321/blog' 
-  : 'https://docs.yoursite.com/blog'; // Change this to your production docs URL
+  : '/blog'; // Combined build serves blog at /blog
 
 export const DOCS_URL = import.meta.env.DEV 
-  ? 'http://localhost:4321/blog' 
-  : 'https://docs.yoursite.com'; // Change this to your production docs URL
+  ? 'http://localhost:4321' 
+  : '/docs'; // Combined build serves docs at /docs
