@@ -155,7 +155,7 @@ export default {
 
 ### Combined Build (Main App + Docs)
 
-The project uses a combined build process that serves both the TanStack Start app and the Astro Starlight docs-site from the same domain:
+The project uses a combined build process that serves both the TanStack Start app and the Astro Starlight docs from the same domain:
 
 - `domain.com/` - Main TanStack Start app
 - `domain.com/docs/` - Documentation (Astro Starlight)
@@ -193,7 +193,7 @@ The `netlify.toml` is pre-configured for the combined build:
 | Command | Description |
 |---------|-------------|
 | `npm run build` | Build main app only |
-| `npm run build:docs` | Build docs-site only |
+| `npm run build:docs` | Build docs only |
 | `npm run build:combined` | Build both and merge to `dist/` |
 
 ### Git Integration Settings

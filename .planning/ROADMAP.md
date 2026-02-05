@@ -18,6 +18,13 @@
 
 **Goal:** Replace mock org ID with real WorkOS API calls
 
+**Plans:** 3 plans
+
+Plans:
+- [ ] 01-01-PLAN.md - WorkOS SDK setup + org creation action
+- [ ] 01-02-PLAN.md - Onboarding flow with billing email
+- [ ] 01-03-PLAN.md - Settings page with live org data
+
 **Requirements:**
 - ORG-03: Org creation calls WorkOS API (not mock ID)
 - ORG-04: User can view org settings

@@ -178,7 +178,7 @@ npx get-shit-done-cc@latest --claude --global
 ├── .cursor/                     # AI coding assistant rules
 │   ├── rules/                   # Contextual rule files (*.mdc)
 │   └── example-prompts.md       # Copy-paste prompts
-├── docs-site/                   # Documentation site (Starlight/Astro)
+├── docs/                        # Documentation site (Starlight/Astro)
 │   ├── astro.config.mjs         # Starlight configuration
 │   ├── src/content/docs/        # Documentation content (MDX)
 │   └── package.json             # Docs dependencies

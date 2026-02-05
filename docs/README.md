@@ -12,7 +12,7 @@ This is the documentation site for iSaaSIT, built with [Astro](https://astro.bui
 
 ## Development
 
-From the `docs-site` directory:
+From the `docs` directory:
 
 ```bash
 # Install dependencies
@@ -47,7 +47,7 @@ npm run preview:docs
 
 1. Connect your GitHub repo to Netlify
 2. Set build settings:
-   - Base directory: `docs-site`
+   - Base directory: `docs`
    - Build command: `npm run build`
    - Publish directory: `dist`
 3. Deploy!
@@ -55,7 +55,7 @@ npm run preview:docs
 ### Vercel
 
 ```bash
-cd docs-site
+cd docs
 vercel --prod
 ```
 
