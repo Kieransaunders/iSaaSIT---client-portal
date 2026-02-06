@@ -22,7 +22,7 @@
     "build": "vite build",
     "build:docs": "cd docs && npm run build",
     "build:combined": "npm run build && npm run build:docs-combined",
-    "build:docs-combined": "cd docs && npm install && npm run build && mkdir -p ../dist/docs && cp -r dist/* ../dist/docs/",
+    "build:docs-combined": "cd docs && npm install && npm run build && mkdir -p ../dist/client/docs && cp -r dist/* ../dist/client/docs/",
     "start": "vite start",
     "preview:docs": "cd docs && npm run preview",
     "preview:combined": "node scripts/preview-combined.js",

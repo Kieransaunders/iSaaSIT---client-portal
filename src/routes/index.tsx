@@ -398,7 +398,7 @@ function CustomerList() {
             <div>
               <h4 className="font-semibold mb-4">Resources</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href={BLOG_URL} className="hover:text-foreground transition-colors">Documentation</a></li>
+                <li><a href={DOCS_URL} className="hover:text-foreground transition-colors">Documentation</a></li>
                 <li><a href="https://docs.convex.dev" target="_blank" rel="noreferrer" className="hover:text-foreground transition-colors">Convex Docs</a></li>
                 <li><a href="https://workos.com/docs" target="_blank" rel="noreferrer" className="hover:text-foreground transition-colors">WorkOS Docs</a></li>
                 <li><a href="#faq" className="hover:text-foreground transition-colors">FAQ</a></li>

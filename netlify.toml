@@ -1,6 +1,13 @@
 [build]
   command = "npm run build:combined"
-  publish = "dist"
+  publish = "dist/client"
+
+# Serve docs as static files (bypass SSR function)
+[[redirects]]
+  from = "/docs/*"
+  to = "/docs/:splat"
+  status = 200
+  force = false
 
 # Blog redirects: /blog/* -> /docs/blog/*
 # This makes the blog accessible at domain.com/blog while it's built at /docs/blog
@@ -8,18 +15,15 @@
   from = "/blog/*"
   to = "/docs/blog/:splat"
   status = 200
+  force = false
 
 [[redirects]]
   from = "/blog"
   to = "/docs/blog"
   status = 301
 
-# SPA fallback for TanStack Start app
-# All routes not matching static files should be handled by the main app
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+# Note: TanStack Start SSR routing is handled automatically by @netlify/vite-plugin-tanstack-start
+# The docs routes above ensure static files are served first before falling back to SSR
 
 # Headers for caching
 [[headers]]

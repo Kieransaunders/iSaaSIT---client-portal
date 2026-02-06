@@ -67,6 +67,12 @@ const adminNavItems = [
 
 const resourceNavItems = [
   {
+    title: "Documentation",
+    url: DOCS_URL,
+    icon: BookOpen,
+    external: true,
+  },
+  {
     title: "Blog",
     url: BLOG_URL,
     icon: BookOpen,
@@ -95,7 +101,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="none">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
