@@ -25,6 +25,7 @@ function OnboardingPage() {
   const { user } = Route.useLoaderData();
   const navigate = useNavigate();
   const [orgName, setOrgName] = useState('');
+  const [billingEmail, setBillingEmail] = useState(user?.email || '');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -41,7 +42,11 @@ function OnboardingPage() {
 
   const handleCreateOrg = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!orgName.trim()) return;
+    if (!orgName.trim() || !billingEmail.trim()) return;
+    if (!billingEmail.includes('@')) {
+      setError('Please enter a valid email address');
+      return;
+    }
 
     setError(null);
     setIsLoading(true);
@@ -102,9 +107,26 @@ function OnboardingPage() {
                     value={orgName}
                     onChange={(e) => setOrgName(e.target.value)}
                     disabled={isLoading}
+                    required
                   />
                   <p className="text-xs text-muted-foreground">
                     This will be the name of your organization
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="billing-email">Billing Email</Label>
+                  <Input
+                    id="billing-email"
+                    type="email"
+                    placeholder="billing@yourcompany.com"
+                    value={billingEmail}
+                    onChange={(e) => setBillingEmail(e.target.value)}
+                    disabled={isLoading}
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Invoices and billing notifications will be sent here
                   </p>
                 </div>
 
@@ -117,7 +139,7 @@ function OnboardingPage() {
                 <Button
                   type="submit"
                   className="w-full"
-                  disabled={isLoading || !orgName.trim()}
+                  disabled={isLoading || !orgName.trim() || !billingEmail.trim()}
                 >
                   {isLoading ? (
                     <>
