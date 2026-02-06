@@ -1,7 +1,7 @@
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
 import { getAuth } from '@workos/authkit-tanstack-react-start';
 import { useState } from 'react';
-import { useQuery, useMutation } from 'convex/react';
+import { useQuery, useAction } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -32,7 +32,7 @@ function OnboardingPage() {
 
   // Check if user already has an org
   const hasOrgResult = useQuery(api.orgs.get.hasOrg);
-  const createOrgInConvex = useMutation(api.orgs.create.getOrCreateMyOrg);
+  const createOrg = useAction(api.workos.createOrg.createOrganization);
 
   // If user already has org, redirect to dashboard
   if (hasOrgResult?.hasOrg) {
@@ -52,25 +52,22 @@ function OnboardingPage() {
     setIsLoading(true);
 
     try {
-      // Step 1: Create org in WorkOS via API
-      // Note: In production, you'd call WorkOS API from a server function
-      // For this demo, we'll create a mock WorkOS org ID
-      const mockWorkosOrgId = `org_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-      // Step 2: Sync to Convex
-      await createOrgInConvex({
-        workosOrgId: mockWorkosOrgId,
-        orgName: orgName.trim(),
+      await createOrg({
+        name: orgName.trim(),
+        billingEmail: billingEmail.trim(),
       });
 
       setIsSuccess(true);
 
-      // Redirect after a moment
       setTimeout(() => {
         navigate({ to: '/dashboard' });
       }, 1500);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create organization');
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Failed to create organization. Please try again.'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -132,7 +129,20 @@ function OnboardingPage() {
 
                 {error && (
                   <Alert variant="destructive">
-                    <AlertDescription>{error}</AlertDescription>
+                    <AlertDescription>
+                      <div className="flex flex-col gap-2">
+                        <div>{error}</div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={handleCreateOrg}
+                          disabled={isLoading}
+                        >
+                          Try Again
+                        </Button>
+                      </div>
+                    </AlertDescription>
                   </Alert>
                 )}
 
