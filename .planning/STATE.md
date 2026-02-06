@@ -54,6 +54,11 @@ See: .planning/PROJECT.md (updated 2025-02-04)
 - ✓ Plan 01-02: Complete - Onboarding form wired to WorkOS action
 - ⏸ Plan 01-03: At checkpoint - Settings page update functionality ready for user verification
 
+## Accumulated Context
+
+### Pending Todos
+1. Replace agency copy with generic workspace terminology (area: ui)
+
 ## Next Action
 
 User verification of settings page end-to-end flow (checkpoint: human-verify)
