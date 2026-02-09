@@ -7,14 +7,14 @@
 See: .planning/PROJECT.md (updated 2025-02-04)
 
 **Core value:** Agencies can spin up client projects with data isolation, billing, and role-based access
-**Current focus:** Phase 1 Complete — Ready for Phase 2
+**Current focus:** Phase 2 In Progress — Team Management Foundation
 
 ## Current Status
 
 | Phase | Status | Progress |
 |-------|--------|----------|
 | 1 | ✓ Complete | 100% |
-| 2 | Pending | 0% |
+| 2 | In Progress | 1/6 plans |
 | 3 | Pending | 0% |
 
 **Overall:** 16/25 requirements complete (64%)
@@ -28,9 +28,10 @@ See: .planning/PROJECT.md (updated 2025-02-04)
 - **Plans:** 01-01 ✓, 01-02 ✓, 01-03 ✓
 
 ### Phase 2: Team Management
-- **Status:** Not started
+- **Status:** In progress (plan 01 of 6 complete)
 - **Requirements:** TEAM-01 to TEAM-06, ASSIGN-02 to ASSIGN-04
-- **Blockers:** None (Phase 1 complete)
+- **Plans:** 02-01 ✓ (schema + invitation backend)
+- **Blockers:** None
 
 ### Phase 3: Billing
 - **Status:** Not started
@@ -39,21 +40,31 @@ See: .planning/PROJECT.md (updated 2025-02-04)
 
 ## Recent Activity
 
+- 2026-02-09: Plan 02-01 complete — pendingInvitations schema, invitation actions (send/revoke/resend), soft-delete support
 - 2026-02-09: Phase 1 verified — 12/12 must-haves passed
 - 2026-02-09: Plan 01-03 complete — User verified settings page end-to-end
 - 2026-02-06: Plan 01-03 at checkpoint — Settings page wired, awaiting verification
 - 2026-02-06: Plan 01-02 complete — Onboarding form wired to WorkOS action
 - 2026-02-05: Plan 01-01 complete — WorkOS SDK installed, org creation action built
-- 2025-02-04: Roadmap created (3 phases)
 
 ## Accumulated Context
 
+### Decisions
+
+| Decision | Phase | Rationale | Impact |
+|----------|-------|-----------|--------|
+| Separate internal.ts for queries/mutations in Convex | 02-01 | "use node" files can only contain actions | Pattern for all future WorkOS API integrations |
+| Usage caps include pending invitations | 02-01 | Prevent race condition exceeding plan limits | All invitation enforcement checks active + pending counts |
+| Client invitations require customerId | 02-01 | Data isolation requires customer assignment | Enforced in sendInvitation action |
+| Resend = revoke + send (no native resend) | 02-01 | WorkOS SDK pattern | Standard for invitation lifecycle management |
+
 ### Pending Todos
 1. Replace agency copy with generic workspace terminology (area: ui)
+2. Configure WorkOS webhook endpoint for invitation.accepted events (area: workos-setup)
 
 ## Next Action
 
-Plan Phase 2: Team Management — `/gsd:discuss-phase 2` or `/gsd:plan-phase 2`
+Continue Phase 2: Team Management — Plan 02-02 or later plans
 
 ---
 *State tracking initialized: 2025-02-04*
