@@ -63,6 +63,8 @@ export default defineSchema({
     firstName: v.optional(v.string()),
     lastName: v.optional(v.string()),
     profilePictureUrl: v.optional(v.string()),
+    // Soft delete support
+    deletedAt: v.optional(v.number()),
     // Timestamps
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -84,6 +86,28 @@ export default defineSchema({
     .index("by_org", ["orgId"])
     // Prevent duplicate assignments
     .index("by_staff_customer", ["staffUserId", "customerId"]),
+
+  // Pending invitations - tracks invitations sent via WorkOS
+  pendingInvitations: defineTable({
+    // WorkOS invitation ID
+    workosInvitationId: v.string(),
+    // Invited user's email
+    email: v.string(),
+    // Organization this invitation belongs to
+    orgId: v.id("orgs"),
+    // Role being invited
+    role: v.union(v.literal("staff"), v.literal("client")),
+    // For client invites: which customer they'll belong to
+    customerId: v.optional(v.id("customers")),
+    // User who sent the invitation
+    inviterUserId: v.id("users"),
+    // Timestamps
+    createdAt: v.number(),
+    expiresAt: v.number(),
+  })
+    .index("by_org", ["orgId"])
+    .index("by_workos_id", ["workosInvitationId"])
+    .index("by_email_org", ["email", "orgId"]),
 
   // Temporary: Keep numbers table from template until fully migrated
   numbers: defineTable({
