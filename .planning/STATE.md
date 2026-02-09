@@ -7,14 +7,14 @@
 See: .planning/PROJECT.md (updated 2025-02-04)
 
 **Core value:** Agencies can spin up client projects with data isolation, billing, and role-based access
-**Current focus:** Phase 2 In Progress — Team Management Foundation
+**Current focus:** Phase 2 In Progress — Staff Assignment Built
 
 ## Current Status
 
 | Phase | Status | Progress |
 |-------|--------|----------|
 | 1 | ✓ Complete | 100% |
-| 2 | In Progress | 1/6 plans |
+| 2 | In Progress | 2/6 plans |
 | 3 | Pending | 0% |
 
 **Overall:** 16/25 requirements complete (64%)
@@ -28,9 +28,9 @@ See: .planning/PROJECT.md (updated 2025-02-04)
 - **Plans:** 01-01 ✓, 01-02 ✓, 01-03 ✓
 
 ### Phase 2: Team Management
-- **Status:** In progress (plan 01 of 6 complete)
-- **Requirements:** TEAM-01 to TEAM-06, ASSIGN-02 to ASSIGN-04
-- **Plans:** 02-01 ✓ (schema + invitation backend)
+- **Status:** In progress (2 of 6 plans complete)
+- **Requirements:** TEAM-01 to TEAM-06, ASSIGN-02 ✓, ASSIGN-03 ✓, ASSIGN-04 ✓
+- **Plans:** 02-01 ✓ (schema + invitation backend), 02-02 ✓ (staff assignment)
 - **Blockers:** None
 
 ### Phase 3: Billing
@@ -40,6 +40,7 @@ See: .planning/PROJECT.md (updated 2025-02-04)
 
 ## Recent Activity
 
+- 2026-02-09: Plan 02-02 complete — Staff assignment mutations/queries + customer detail assignment UI
 - 2026-02-09: Plan 02-01 complete — pendingInvitations schema, invitation actions (send/revoke/resend), soft-delete support
 - 2026-02-09: Phase 1 verified — 12/12 must-haves passed
 - 2026-02-09: Plan 01-03 complete — User verified settings page end-to-end
@@ -53,6 +54,9 @@ See: .planning/PROJECT.md (updated 2025-02-04)
 
 | Decision | Phase | Rationale | Impact |
 |----------|-------|-----------|--------|
+| Admin-only assignment UI | 02-02 | Only admins should manage staff assignments per security model | Assignment card hidden from staff and client roles |
+| Inline assignment UI on customer detail | 02-02 | Assignments are customer-scoped, most intuitive on customer page | No separate assignment management page needed |
+| Prevent duplicate assignments at mutation level | 02-02 | Ensures data integrity, simpler than frontend checks | ConvexError thrown if duplicate assignment attempted |
 | Separate internal.ts for queries/mutations in Convex | 02-01 | "use node" files can only contain actions | Pattern for all future WorkOS API integrations |
 | Usage caps include pending invitations | 02-01 | Prevent race condition exceeding plan limits | All invitation enforcement checks active + pending counts |
 | Client invitations require customerId | 02-01 | Data isolation requires customer assignment | Enforced in sendInvitation action |
@@ -64,7 +68,7 @@ See: .planning/PROJECT.md (updated 2025-02-04)
 
 ## Next Action
 
-Continue Phase 2: Team Management — Plan 02-02 or later plans
+Continue Phase 2: Team Management — Plan 02-03 or later plans (staff-scoped data queries)
 
 ---
 *State tracking initialized: 2025-02-04*
