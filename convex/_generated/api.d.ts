@@ -11,6 +11,7 @@
 import type * as assignments_mutations from "../assignments/mutations.js";
 import type * as assignments_queries from "../assignments/queries.js";
 import type * as customers_crud from "../customers/crud.js";
+import type * as http from "../http.js";
 import type * as invitations_internal from "../invitations/internal.js";
 import type * as invitations_manage from "../invitations/manage.js";
 import type * as invitations_queries from "../invitations/queries.js";
@@ -20,6 +21,8 @@ import type * as orgs_create from "../orgs/create.js";
 import type * as orgs_get from "../orgs/get.js";
 import type * as orgs_update from "../orgs/update.js";
 import type * as users_create from "../users/create.js";
+import type * as users_sync from "../users/sync.js";
+import type * as webhooks_workos from "../webhooks/workos.js";
 import type * as workos_createOrg from "../workos/createOrg.js";
 import type * as workos_storeOrg from "../workos/storeOrg.js";
 import type * as workos_updateOrg from "../workos/updateOrg.js";
@@ -34,6 +37,7 @@ declare const fullApi: ApiFromModules<{
   "assignments/mutations": typeof assignments_mutations;
   "assignments/queries": typeof assignments_queries;
   "customers/crud": typeof customers_crud;
+  http: typeof http;
   "invitations/internal": typeof invitations_internal;
   "invitations/manage": typeof invitations_manage;
   "invitations/queries": typeof invitations_queries;
@@ -43,6 +47,8 @@ declare const fullApi: ApiFromModules<{
   "orgs/get": typeof orgs_get;
   "orgs/update": typeof orgs_update;
   "users/create": typeof users_create;
+  "users/sync": typeof users_sync;
+  "webhooks/workos": typeof webhooks_workos;
   "workos/createOrg": typeof workos_createOrg;
   "workos/storeOrg": typeof workos_storeOrg;
   "workos/updateOrg": typeof workos_updateOrg;

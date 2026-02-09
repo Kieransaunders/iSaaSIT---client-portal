@@ -112,3 +112,21 @@ export const getMyOrgInternal = internalQuery({
     return org;
   },
 });
+
+/**
+ * Internal query to get org by WorkOS organization ID
+ * Used by webhook handlers to look up org from WorkOS data
+ */
+export const getOrgByWorkosOrgId = internalQuery({
+  args: {
+    workosOrgId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const org = await ctx.db
+      .query("orgs")
+      .withIndex("by_workos_org_id", (q) => q.eq("workosOrgId", args.workosOrgId))
+      .first();
+
+    return org;
+  },
+});

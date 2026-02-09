@@ -141,3 +141,20 @@ export const getCustomer = internalQuery({
     return customer;
   },
 });
+
+/**
+ * Internal query to get pending invitation by WorkOS invitation ID
+ */
+export const getPendingInvitationByWorkosId = internalQuery({
+  args: {
+    workosInvitationId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const invitation = await ctx.db
+      .query("pendingInvitations")
+      .withIndex("by_workos_id", (q) => q.eq("workosInvitationId", args.workosInvitationId))
+      .first();
+
+    return invitation;
+  },
+});
