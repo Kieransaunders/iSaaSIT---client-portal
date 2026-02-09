@@ -4,6 +4,8 @@ import { createServerFn } from '@tanstack/react-start';
 import { MainLayout } from '@/components/layout/main-layout';
 import { api } from '../../convex/_generated/api';
 import { fetchMutation } from 'convex/nextjs';
+import { useQuery } from 'convex/react';
+import { UsageWarningBanner } from '@/components/billing/CapReachedBanner';
 
 // Server function to check if user has an org
 const checkUserOrg = createServerFn({ method: 'GET' })
@@ -36,8 +38,12 @@ export const Route = createFileRoute('/_authenticated')({
 function AuthenticatedLayout() {
   const { user } = Route.useLoaderData();
 
+  // Get usage stats for warning banner (only if user has org)
+  const usageStats = useQuery(api.billing.queries.getUsageStats);
+
   return (
     <MainLayout breadcrumbs={[{ label: "Dashboard" }]}>
+      {usageStats && <UsageWarningBanner usage={usageStats.usage} />}
       <Outlet />
     </MainLayout>
   );

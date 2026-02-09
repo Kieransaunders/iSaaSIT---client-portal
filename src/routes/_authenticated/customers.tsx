@@ -36,6 +36,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { CapReachedBanner } from '@/components/billing/CapReachedBanner';
 
 export const Route = createFileRoute('/_authenticated/customers')({
   component: CustomersPage,
@@ -283,22 +284,38 @@ function CreateCustomerForm({
   const [email, setEmail] = useState('');
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [limitError, setLimitError] = useState(false);
+
+  // Get usage stats for inline limit check
+  const usage = useQuery(api.customers.crud.getCustomerUsage);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
 
     setIsSubmitting(true);
+    setLimitError(false);
     try {
       await onSubmit({
         name: name.trim(),
         email: email.trim() || undefined,
         notes: notes.trim() || undefined,
       });
+    } catch (error) {
+      // Check if error is a limit error
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes('limit reached') || errorMessage.includes('Customer limit')) {
+        setLimitError(true);
+      } else {
+        // Re-throw other errors for default handling
+        throw error;
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const isAtLimit = usage?.atLimit || false;
 
   return (
     <form onSubmit={handleSubmit}>
@@ -339,12 +356,21 @@ function CreateCustomerForm({
             rows={3}
           />
         </div>
+
+        {/* Show inline upgrade prompt when at limit or error occurred */}
+        {(isAtLimit || limitError) && usage && (
+          <CapReachedBanner
+            resourceType="customers"
+            currentCount={usage.count}
+            maxCount={usage.max}
+          />
+        )}
       </div>
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
           Cancel
         </Button>
-        <Button type="submit" disabled={isSubmitting || !name.trim()}>
+        <Button type="submit" disabled={isSubmitting || !name.trim() || isAtLimit}>
           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Create Customer
         </Button>
