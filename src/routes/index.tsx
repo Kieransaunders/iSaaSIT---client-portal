@@ -1,14 +1,14 @@
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { getAuth, getSignInUrl, getSignUpUrl } from '@workos/authkit-tanstack-react-start';
+import { 
+  ArrowRight, Building2, CheckCircle2, ChevronDown, Code2, Command, 
+  CreditCard, Database, FileText, Github, HelpCircle, Layers, Lock, 
+  Mail, MessageCircle, Server, Shield, Sparkles, Terminal,
+  Twitter, Users, Zap
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ModeToggle } from '@/components/mode-toggle';
 import { BLOG_URL, DOCS_URL } from '@/lib/constants';
-import { 
-  Building2, Users, Shield, CreditCard, ArrowRight, CheckCircle2, 
-  Zap, Lock, Code2, Sparkles, ChevronDown, Github, Twitter, 
-  MessageCircle, Mail, FileText, HelpCircle, Command, Terminal,
-  Database, Server, Layers
-} from 'lucide-react';
 
 export const Route = createFileRoute('/')({
   component: Home,
@@ -533,7 +533,7 @@ function PricingCard({
   name: string;
   price: string;
   description: string;
-  features: string[];
+  features: Array<string>;
   cta: string;
   href: string;
   highlighted?: boolean;
