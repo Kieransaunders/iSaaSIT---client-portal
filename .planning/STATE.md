@@ -7,17 +7,17 @@
 See: .planning/PROJECT.md (updated 2025-02-04)
 
 **Core value:** Agencies can spin up client projects with data isolation, billing, and role-based access
-**Current focus:** Phase 2 In Progress — Staff Assignment Built
+**Current focus:** Phase 2 In Progress — Team Management UI Complete
 
 ## Current Status
 
 | Phase | Status | Progress |
 |-------|--------|----------|
 | 1 | ✓ Complete | 100% |
-| 2 | In Progress | 2/6 plans |
+| 2 | In Progress | 4/5 plans |
 | 3 | Pending | 0% |
 
-**Overall:** 16/25 requirements complete (64%)
+**Overall:** 18/25 requirements complete (72%)
 
 ## Phase Status
 
@@ -28,9 +28,9 @@ See: .planning/PROJECT.md (updated 2025-02-04)
 - **Plans:** 01-01 ✓, 01-02 ✓, 01-03 ✓
 
 ### Phase 2: Team Management
-- **Status:** In progress (3 of 6 plans complete)
-- **Requirements:** TEAM-01 to TEAM-06, ASSIGN-02 ✓, ASSIGN-03 ✓, ASSIGN-04 ✓
-- **Plans:** 02-01 ✓ (schema + invitation backend), 02-02 ✓ (staff assignment), 02-03 ✓ (webhook + user management)
+- **Status:** In progress (4 of 5 plans complete)
+- **Requirements:** TEAM-01 ✓, TEAM-02 ✓, TEAM-03 ✓, TEAM-04 ✓, TEAM-05, TEAM-06, ASSIGN-02 ✓, ASSIGN-03 ✓, ASSIGN-04 ✓
+- **Plans:** 02-01 ✓ (schema + invitation backend), 02-02 ✓ (staff assignment), 02-03 ✓ (webhook + user management), 02-04 ✓ (team UI)
 - **Blockers:** None
 
 ### Phase 3: Billing
@@ -40,13 +40,11 @@ See: .planning/PROJECT.md (updated 2025-02-04)
 
 ## Recent Activity
 
+- 2026-02-09: Plan 02-04 complete — Team management UI with tabbed interface, invite dialog, member/invitation tables
 - 2026-02-09: Plan 02-03 complete — WorkOS webhook handler (invitation.accepted) + user management backend (remove/restore/list)
 - 2026-02-09: Plan 02-02 complete — Staff assignment mutations/queries + customer detail assignment UI
 - 2026-02-09: Plan 02-01 complete — pendingInvitations schema, invitation actions (send/revoke/resend), soft-delete support
 - 2026-02-09: Phase 1 verified — 12/12 must-haves passed
-- 2026-02-09: Plan 01-03 complete — User verified settings page end-to-end
-- 2026-02-06: Plan 01-03 at checkpoint — Settings page wired, awaiting verification
-- 2026-02-06: Plan 01-02 complete — Onboarding form wired to WorkOS action
 
 ## Accumulated Context
 
@@ -54,6 +52,10 @@ See: .planning/PROJECT.md (updated 2025-02-04)
 
 | Decision | Phase | Rationale | Impact |
 |----------|-------|-----------|--------|
+| Client-side tab filtering for team page | 02-04 | Single query, instant tab switching, better UX | May need pagination for orgs with 1000+ users |
+| Separate TeamTable and PendingTable components | 02-04 | Different data shapes require distinct components | Pattern for specialized table components |
+| Console.error for async errors (not toasts yet) | 02-04 | Toast system not implemented | Replace with toast notifications in future |
+| Confirmation dialog only for user removal | 02-04 | User removal more permanent than revoking invitation | AlertDialog before removeUser, not for revoke |
 | Manual HMAC webhook verification | 02-03 | Convex HTTP actions can't use "use node" | Web Crypto API for signature verification, pattern for all webhooks |
 | Auto-unassign staff on removal | 02-03 | Prevent orphaned assignments | Staff assignments deleted when user removed, not restored on restore |
 | Computed status field in user queries | 02-03 | Frontend needs active/removed distinction | listOrgMembers returns status based on deletedAt field |
@@ -72,7 +74,7 @@ See: .planning/PROJECT.md (updated 2025-02-04)
 
 ## Next Action
 
-Continue Phase 2: Team Management — Plan 02-04 or later plans (team UI, staff-scoped data queries)
+Continue Phase 2: Team Management — Plan 02-05 (verification checkpoint for end-to-end team management workflow)
 
 ---
 *State tracking initialized: 2025-02-04*
