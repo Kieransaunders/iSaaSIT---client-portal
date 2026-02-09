@@ -11,12 +11,12 @@
 - [x] **AUTH-02**: Authenticated routes protected via loader
 - [x] **AUTH-03**: Session persists across page refresh
 
-### Organization (Partial)
+### Organization (Complete)
 
 - [x] **ORG-01**: User redirected to onboarding if no org
 - [x] **ORG-02**: User can create org via onboarding form
-- [ ] **ORG-03**: Org creation calls WorkOS API (not mock ID)
-- [ ] **ORG-04**: User can view org settings
+- [x] **ORG-03**: Org creation calls WorkOS API (not mock ID)
+- [x] **ORG-04**: User can view org settings
 
 ### Customer Management (Complete)
 
@@ -96,8 +96,8 @@
 | AUTH-03 | - | Complete |
 | ORG-01 | - | Complete |
 | ORG-02 | - | Complete |
-| ORG-03 | 1 | Pending |
-| ORG-04 | 1 | Pending |
+| ORG-03 | 1 | Complete |
+| ORG-04 | 1 | Complete |
 | CUST-01 | - | Complete |
 | CUST-02 | - | Complete |
 | CUST-03 | - | Complete |
@@ -126,8 +126,8 @@
 
 **Coverage:**
 - v1 requirements: 25 total
-- Complete: 14 (56%)
-- Pending: 11 (44%)
+- Complete: 16 (64%)
+- Pending: 9 (36%)
 
 ---
 *Requirements defined: 2025-02-04*
