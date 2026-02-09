@@ -1,9 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { AlertTriangle, X } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useState } from "react";
 
 interface CapReachedBannerProps {
   resourceType: "customers" | "staff" | "clients";

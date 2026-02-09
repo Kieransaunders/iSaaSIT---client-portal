@@ -1,6 +1,5 @@
-import { v } from "convex/values";
+import { ConvexError, v  } from "convex/values";
 import { query } from "../_generated/server";
-import { ConvexError } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 
 /**
@@ -30,7 +29,7 @@ export const listAssignedStaff = query({
     }
 
     // Verify user has access to this customer
-    const customer = await ctx.db.get(args.customerId);
+    const customer = await ctx.db.get("customers", args.customerId);
     if (!customer) {
       throw new ConvexError("Customer not found");
     }
@@ -48,7 +47,7 @@ export const listAssignedStaff = query({
     // Get staff user details for each assignment
     const staffList = await Promise.all(
       assignments.map(async (assignment) => {
-        const staffUser = await ctx.db.get(assignment.staffUserId);
+        const staffUser = await ctx.db.get("users", assignment.staffUserId);
         if (!staffUser) {
           return null;
         }
@@ -101,7 +100,7 @@ export const listAvailableStaff = query({
     const orgId = userRecord.orgId;
 
     // Verify the customer exists and belongs to the admin's org
-    const customer = await ctx.db.get(args.customerId);
+    const customer = await ctx.db.get("customers", args.customerId);
     if (!customer) {
       throw new ConvexError("Customer not found");
     }

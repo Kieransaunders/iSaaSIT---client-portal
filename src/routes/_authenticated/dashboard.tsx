@@ -1,12 +1,12 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useQuery } from 'convex/react';
+import { Building2, CreditCard, Loader2, Plus, TrendingUp, Users } from 'lucide-react';
+import { useEffect } from 'react';
 import { api } from '../../../convex/_generated/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Building2, Users, CreditCard, TrendingUp, Plus, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useEffect } from 'react';
 
 export const Route = createFileRoute('/_authenticated/dashboard')({
   component: DashboardPage,

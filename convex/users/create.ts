@@ -1,12 +1,12 @@
-import { v } from "convex/values";
+import { ConvexError, v  } from "convex/values";
 import { mutation, query } from "../_generated/server";
-import { ConvexError } from "convex/values";
 
 /**
  * Sync current WorkOS user to Convex
  * Called on first login to create user record
  */
 export const syncCurrentUser = mutation({
+  args: {},
   handler: async (ctx) => {
     const user = await ctx.auth.getUserIdentity();
     if (!user) {
@@ -27,7 +27,7 @@ export const syncCurrentUser = mutation({
 
     if (existing) {
       // Update user data from WorkOS
-      await ctx.db.patch(existing._id, {
+      await ctx.db.patch("users", existing._id, {
         email,
         firstName,
         lastName,
@@ -55,6 +55,7 @@ export const syncCurrentUser = mutation({
  * Get current user's profile
  */
 export const getMyProfile = query({
+  args: {},
   handler: async (ctx) => {
     const user = await ctx.auth.getUserIdentity();
     if (!user) {
@@ -75,7 +76,7 @@ export const getMyProfile = query({
     // Get org name if user has an org
     let orgName: string | null = null;
     if (userRecord.orgId) {
-      const org = await ctx.db.get(userRecord.orgId);
+      const org = await ctx.db.get("orgs", userRecord.orgId);
       orgName = org?.name ?? null;
     }
 

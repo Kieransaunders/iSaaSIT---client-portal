@@ -1,5 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useQuery, useAction } from 'convex/react';
+import { useAction, useQuery } from 'convex/react';
+import { AlertCircle, Building2, Check, Loader2, UserCircle, Users } from 'lucide-react';
+import { useState } from 'react';
 import { api } from '../../../convex/_generated/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,8 +17,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Building2, Users, UserCircle, Check, Loader2, AlertCircle } from 'lucide-react';
-import { useState } from 'react';
 import { UpgradeButton } from '@/components/billing/UpgradeButton';
 import { UsageProgress } from '@/components/billing/UsageProgress';
 
@@ -29,7 +29,7 @@ type PlanInfo = {
   name: string;
   price: string;
   description: string;
-  features: string[];
+  features: Array<string>;
   limits: { maxCustomers: number; maxStaff: number; maxClients: number };
   variantId?: string;
 };

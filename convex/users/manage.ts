@@ -1,6 +1,5 @@
-import { v } from "convex/values";
+import { ConvexError, v  } from "convex/values";
 import { mutation } from "../_generated/server";
-import { ConvexError } from "convex/values";
 
 /**
  * Soft-delete a user (sets deletedAt timestamp)
@@ -34,7 +33,7 @@ export const removeUser = mutation({
     }
 
     // Get target user
-    const targetUser = await ctx.db.get(args.userId);
+    const targetUser = await ctx.db.get("users", args.userId);
     if (!targetUser) {
       throw new ConvexError("User not found");
     }
@@ -50,7 +49,7 @@ export const removeUser = mutation({
     }
 
     // Soft delete: set deletedAt timestamp
-    await ctx.db.patch(args.userId, {
+    await ctx.db.patch("users", args.userId, {
       deletedAt: Date.now(),
       updatedAt: Date.now(),
     });
@@ -63,7 +62,7 @@ export const removeUser = mutation({
         .collect();
 
       for (const assignment of assignments) {
-        await ctx.db.delete(assignment._id);
+        await ctx.db.delete("staffCustomerAssignments", assignment._id);
       }
     }
 
@@ -103,7 +102,7 @@ export const restoreUser = mutation({
     }
 
     // Get target user
-    const targetUser = await ctx.db.get(args.userId);
+    const targetUser = await ctx.db.get("users", args.userId);
     if (!targetUser) {
       throw new ConvexError("User not found");
     }
@@ -119,7 +118,7 @@ export const restoreUser = mutation({
     }
 
     // Clear deletedAt to restore
-    await ctx.db.patch(args.userId, {
+    await ctx.db.patch("users", args.userId, {
       deletedAt: undefined,
       updatedAt: Date.now(),
     });

@@ -1,5 +1,5 @@
-import { internalMutation } from "../_generated/server";
 import { v } from "convex/values";
+import { internalMutation } from "../_generated/server";
 
 /**
  * Internal mutation to store organization in Convex
@@ -37,7 +37,7 @@ export const storeOrg = internalMutation({
 
     if (existingUser) {
       // Update existing user with org and admin role
-      await ctx.db.patch(existingUser._id, {
+      await ctx.db.patch("users", existingUser._id, {
         orgId,
         role: "admin",
         updatedAt: now,

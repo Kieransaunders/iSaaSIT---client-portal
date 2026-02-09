@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
+import { RotateCcw, Trash2, UserCircle } from 'lucide-react';
+import type { Id } from '../../../convex/_generated/dataModel';
 import {
   Table,
   TableBody,
@@ -20,8 +22,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { UserCircle, RotateCcw, Trash2 } from 'lucide-react';
-import type { Id } from '../../../convex/_generated/dataModel';
 
 interface TeamMember {
   _id: Id<'users'>;
@@ -36,7 +36,7 @@ interface TeamMember {
 }
 
 interface TeamTableProps {
-  members: TeamMember[];
+  members: Array<TeamMember>;
   onRemove?: (userId: Id<'users'>) => void;
   onRestore?: (userId: Id<'users'>) => void;
 }
@@ -164,7 +164,7 @@ interface PendingInvitation {
 }
 
 interface PendingTableProps {
-  invitations: PendingInvitation[];
+  invitations: Array<PendingInvitation>;
   onResend?: (invitationId: Id<'pendingInvitations'>) => void;
   onRevoke?: (invitationId: Id<'pendingInvitations'>) => void;
 }

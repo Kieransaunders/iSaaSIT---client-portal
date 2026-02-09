@@ -1,5 +1,8 @@
 import { createFileRoute, useNavigate, useParams } from '@tanstack/react-router';
-import { useQuery, useMutation } from 'convex/react';
+import { useMutation, useQuery } from 'convex/react';
+import { ArrowLeft, Building2, Calendar, FileText, Loader2, Mail, Save, UserPlus, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { format } from 'date-fns';
 import { api } from '../../../../convex/_generated/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,10 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { Building2, ArrowLeft, Save, Loader2, Calendar, Mail, FileText, X, UserPlus } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useState, useEffect } from 'react';
-import { format } from 'date-fns';
 
 export const Route = createFileRoute('/_authenticated/customers/$customerId')({
   component: CustomerDetailPage,

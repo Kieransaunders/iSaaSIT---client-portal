@@ -1,9 +1,9 @@
 "use node";
 
+import { WorkOS } from "@workos-inc/node";
+import { ConvexError, v } from "convex/values";
 import { action } from "../_generated/server";
 import { internal } from "../_generated/api";
-import { WorkOS } from "@workos-inc/node";
-import { v, ConvexError } from "convex/values";
 
 /**
  * Send an invitation to join the organization via WorkOS

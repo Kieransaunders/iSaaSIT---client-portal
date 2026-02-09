@@ -1,6 +1,5 @@
-import { v } from "convex/values";
+import { ConvexError, v  } from "convex/values";
 import { mutation, query } from "../_generated/server";
-import { ConvexError } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 
 /**
@@ -8,6 +7,7 @@ import type { Id } from "../_generated/dataModel";
  * Respects role-based access (Admin sees all, Staff sees assigned, Client sees own)
  */
 export const listCustomers = query({
+  args: {},
   handler: async (ctx) => {
     const user = await ctx.auth.getUserIdentity();
     if (!user) {
@@ -46,7 +46,7 @@ export const listCustomers = query({
 
       const customerIds = assignments.map((a) => a.customerId);
       const customers = await Promise.all(
-        customerIds.map((id) => ctx.db.get(id))
+        customerIds.map((id) => ctx.db.get("customers", id))
       );
       return customers.filter((c): c is NonNullable<typeof c> => c !== null);
     } else if (role === "client") {
@@ -54,7 +54,7 @@ export const listCustomers = query({
       if (!userRecord.customerId) {
         return [];
       }
-      const customer = await ctx.db.get(userRecord.customerId);
+      const customer = await ctx.db.get("customers", userRecord.customerId);
       return customer ? [customer] : [];
     }
 
@@ -89,7 +89,7 @@ export const getCustomer = query({
     }
 
     // Get the customer
-    const customer = await ctx.db.get(args.customerId);
+    const customer = await ctx.db.get("customers", args.customerId);
     if (!customer) {
       throw new ConvexError("Customer not found");
     }
@@ -160,7 +160,7 @@ export const createCustomer = mutation({
     const orgId = userRecord.orgId;
 
     // Get org to check limits
-    const org = await ctx.db.get(orgId);
+    const org = await ctx.db.get("orgs", orgId);
     if (!org) {
       throw new ConvexError("Organization not found");
     }
@@ -232,7 +232,7 @@ export const updateCustomer = mutation({
     }
 
     // Get the customer
-    const customer = await ctx.db.get(args.customerId);
+    const customer = await ctx.db.get("customers", args.customerId);
     if (!customer) {
       throw new ConvexError("Customer not found");
     }
@@ -270,7 +270,7 @@ export const updateCustomer = mutation({
     if (args.email !== undefined) updateData.email = args.email;
     if (args.notes !== undefined) updateData.notes = args.notes;
 
-    await ctx.db.patch(args.customerId, updateData);
+    await ctx.db.patch("customers", args.customerId, updateData);
 
     return args.customerId;
   },
@@ -308,7 +308,7 @@ export const deleteCustomer = mutation({
     }
 
     // Get the customer
-    const customer = await ctx.db.get(args.customerId);
+    const customer = await ctx.db.get("customers", args.customerId);
     if (!customer) {
       throw new ConvexError("Customer not found");
     }
@@ -319,7 +319,7 @@ export const deleteCustomer = mutation({
     }
 
     // Delete the customer
-    await ctx.db.delete(args.customerId);
+    await ctx.db.delete("customers", args.customerId);
 
     // Clean up staff assignments
     const assignments = await ctx.db
@@ -328,7 +328,7 @@ export const deleteCustomer = mutation({
       .collect();
 
     for (const assignment of assignments) {
-      await ctx.db.delete(assignment._id);
+      await ctx.db.delete("staffCustomerAssignments", assignment._id);
     }
 
     return args.customerId;
@@ -339,6 +339,7 @@ export const deleteCustomer = mutation({
  * Get customer count and limit info for the org
  */
 export const getCustomerUsage = query({
+  args: {},
   handler: async (ctx) => {
     const user = await ctx.auth.getUserIdentity();
     if (!user) {
@@ -362,7 +363,7 @@ export const getCustomerUsage = query({
     }
 
     // Get org limits
-    const org = await ctx.db.get(userRecord.orgId);
+    const org = await ctx.db.get("orgs", userRecord.orgId);
     if (!org) {
       throw new ConvexError("Organization not found");
     }

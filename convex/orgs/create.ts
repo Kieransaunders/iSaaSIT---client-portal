@@ -1,6 +1,5 @@
-import { v } from "convex/values";
+import { ConvexError, v  } from "convex/values";
 import { mutation } from "../_generated/server";
-import { ConvexError } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 
 /**
@@ -72,12 +71,12 @@ export const getOrCreateMyOrg = mutation({
 
     if (existingUser?.orgId) {
       // User already has an org, return it
-      const org = await ctx.db.get(existingUser.orgId);
+      const org = await ctx.db.get("orgs", existingUser.orgId);
       return { org, isNew: false };
     }
 
     // Check if org exists in Convex
-    let org = await ctx.db
+    const org = await ctx.db
       .query("orgs")
       .withIndex("by_workos_org_id", (q) => q.eq("workosOrgId", args.workosOrgId))
       .first();
@@ -109,7 +108,7 @@ export const getOrCreateMyOrg = mutation({
     const lastName = typeof user.family_name === "string" ? user.family_name : undefined;
 
     if (existingUser) {
-      await ctx.db.patch(existingUser._id, {
+      await ctx.db.patch("users", existingUser._id, {
         orgId,
         role: "admin",
         email,
@@ -130,7 +129,7 @@ export const getOrCreateMyOrg = mutation({
       });
     }
 
-    const newOrg = await ctx.db.get(orgId);
+    const newOrg = await ctx.db.get("orgs", orgId);
     return { org: newOrg, isNew: true };
   },
 });

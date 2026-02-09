@@ -1,10 +1,10 @@
 import { Outlet, createFileRoute, redirect } from '@tanstack/react-router';
 import { getAuth, getSignInUrl } from '@workos/authkit-tanstack-react-start';
 import { createServerFn } from '@tanstack/react-start';
-import { MainLayout } from '@/components/layout/main-layout';
-import { api } from '../../convex/_generated/api';
 import { fetchMutation } from 'convex/nextjs';
 import { useQuery } from 'convex/react';
+import { api } from '../../convex/_generated/api';
+import { MainLayout } from '@/components/layout/main-layout';
 import { UsageWarningBanner } from '@/components/billing/CapReachedBanner';
 
 // Server function to check if user has an org

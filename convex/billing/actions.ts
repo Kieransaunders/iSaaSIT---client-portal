@@ -1,9 +1,9 @@
 "use node";
 
+import { ConvexError, v } from "convex/values";
+import { getCustomer, lemonSqueezySetup, cancelSubscription as lsCancelSubscription } from "@lemonsqueezy/lemonsqueezy.js";
 import { action } from "../_generated/server";
 import { internal } from "../_generated/api";
-import { v, ConvexError } from "convex/values";
-import { lemonSqueezySetup, cancelSubscription as lsCancelSubscription, getCustomer } from "@lemonsqueezy/lemonsqueezy.js";
 
 /**
  * Create a checkout URL for a specific plan variant

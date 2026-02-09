@@ -1,5 +1,5 @@
-import { internalMutation, internalQuery } from "../_generated/server";
 import { v } from "convex/values";
+import { internalMutation, internalQuery } from "../_generated/server";
 
 /**
  * Internal query to get pending invitation by ID
@@ -9,7 +9,7 @@ export const getPendingInvitation = internalQuery({
     invitationId: v.id("pendingInvitations"),
   },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.invitationId);
+    return await ctx.db.get("pendingInvitations", args.invitationId);
   },
 });
 
@@ -49,7 +49,7 @@ export const deletePendingInvitation = internalMutation({
     invitationId: v.id("pendingInvitations"),
   },
   handler: async (ctx, args) => {
-    await ctx.db.delete(args.invitationId);
+    await ctx.db.delete("pendingInvitations", args.invitationId);
   },
 });
 
@@ -63,7 +63,7 @@ export const updatePendingInvitation = internalMutation({
     expiresAt: v.number(),
   },
   handler: async (ctx, args) => {
-    await ctx.db.patch(args.invitationId, {
+    await ctx.db.patch("pendingInvitations", args.invitationId, {
       workosInvitationId: args.workosInvitationId,
       expiresAt: args.expiresAt,
     });
@@ -132,7 +132,7 @@ export const getCustomer = internalQuery({
     orgId: v.id("orgs"),
   },
   handler: async (ctx, args) => {
-    const customer = await ctx.db.get(args.customerId);
+    const customer = await ctx.db.get("customers", args.customerId);
 
     if (!customer || customer.orgId !== args.orgId) {
       return null;

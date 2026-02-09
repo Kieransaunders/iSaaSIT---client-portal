@@ -1,10 +1,11 @@
-import { query } from "../_generated/server";
 import { ConvexError } from "convex/values";
+import { query } from "../_generated/server";
 
 /**
  * List all pending invitations for the current user's organization
  */
 export const listPendingInvitations = query({
+  args: {},
   handler: async (ctx) => {
     // Get authenticated user
     const identity = await ctx.auth.getUserIdentity();
@@ -47,7 +48,7 @@ export const listPendingInvitations = query({
         let customerName: string | undefined = undefined;
 
         if (invitation.customerId) {
-          const customer = await ctx.db.get(invitation.customerId);
+          const customer = await ctx.db.get("customers", invitation.customerId);
           customerName = customer?.name;
         }
 

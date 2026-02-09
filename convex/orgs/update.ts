@@ -21,6 +21,6 @@ export const syncOrgUpdate = internalMutation({
       updates.billingEmail = args.billingEmail;
     }
 
-    await ctx.db.patch(args.orgId, updates);
+    await ctx.db.patch("orgs", args.orgId, updates);
   },
 });

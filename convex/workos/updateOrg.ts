@@ -1,8 +1,8 @@
 "use node";
+import { WorkOS } from "@workos-inc/node";
+import { ConvexError, v } from "convex/values";
 import { action } from "../_generated/server";
 import { internal } from "../_generated/api";
-import { WorkOS } from "@workos-inc/node";
-import { v, ConvexError } from "convex/values";
 
 export const updateOrganization = action({
   args: {
@@ -26,7 +26,7 @@ export const updateOrganization = action({
     }
 
     // Initialize WorkOS
-    const workos = new WorkOS(process.env.WORKOS_API_KEY!);
+    const workos = new WorkOS(process.env.WORKOS_API_KEY);
 
     try {
       // Build update payload

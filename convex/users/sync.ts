@@ -1,5 +1,5 @@
-import { internalMutation } from "../_generated/server";
 import { v } from "convex/values";
+import { internalMutation } from "../_generated/server";
 
 /**
  * Sync user from WorkOS invitation acceptance webhook
@@ -26,7 +26,7 @@ export const syncFromInvitation = internalMutation({
 
     if (existing) {
       // Update existing user with invitation data
-      await ctx.db.patch(existing._id, {
+      await ctx.db.patch("users", existing._id, {
         email: args.email,
         firstName: args.firstName,
         lastName: args.lastName,
@@ -70,7 +70,7 @@ export const deletePendingInvitationByWorkosId = internalMutation({
       .first();
 
     if (invitation) {
-      await ctx.db.delete(invitation._id);
+      await ctx.db.delete("pendingInvitations", invitation._id);
     }
   },
 });

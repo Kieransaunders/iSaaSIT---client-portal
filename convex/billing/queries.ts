@@ -1,5 +1,5 @@
-import { query } from "../_generated/server";
 import { ConvexError } from "convex/values";
+import { query } from "../_generated/server";
 import { getPlanName } from "../lemonsqueezy/plans";
 
 /**
@@ -7,6 +7,7 @@ import { getPlanName } from "../lemonsqueezy/plans";
  * Returns counts of customers, staff, and clients against plan limits
  */
 export const getUsageStats = query({
+  args: {},
   handler: async (ctx) => {
     // Get authenticated user
     const identity = await ctx.auth.getUserIdentity();
@@ -27,7 +28,7 @@ export const getUsageStats = query({
     }
 
     // Get org details for limits
-    const org = await ctx.db.get(userRecord.orgId);
+    const org = await ctx.db.get("orgs", userRecord.orgId);
     if (!org) {
       throw new ConvexError("Organization not found");
     }
@@ -42,7 +43,7 @@ export const getUsageStats = query({
     // Count active staff and clients (excluding soft-deleted users)
     const users = await ctx.db
       .query("users")
-      .withIndex("by_org", (q) => q.eq("orgId", userRecord.orgId!))
+      .withIndex("by_org", (q) => q.eq("orgId", userRecord.orgId))
       .collect();
 
     const activeUsers = users.filter((u) => !u.deletedAt);
@@ -87,6 +88,7 @@ export const getUsageStats = query({
  * Admin-only query that returns subscription details and trial status
  */
 export const getBillingInfo = query({
+  args: {},
   handler: async (ctx) => {
     // Get authenticated user
     const identity = await ctx.auth.getUserIdentity();
@@ -111,7 +113,7 @@ export const getBillingInfo = query({
     }
 
     // Get org details
-    const org = await ctx.db.get(userRecord.orgId);
+    const org = await ctx.db.get("orgs", userRecord.orgId);
     if (!org) {
       throw new ConvexError("Organization not found");
     }

@@ -1,6 +1,5 @@
-import { v } from "convex/values";
+import { ConvexError, v  } from "convex/values";
 import { mutation } from "../_generated/server";
-import { ConvexError } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 
 /**
@@ -38,7 +37,7 @@ export const assignStaff = mutation({
     const orgId = userRecord.orgId;
 
     // Verify the customer exists and belongs to the admin's org
-    const customer = await ctx.db.get(args.customerId);
+    const customer = await ctx.db.get("customers", args.customerId);
     if (!customer) {
       throw new ConvexError("Customer not found");
     }
@@ -48,7 +47,7 @@ export const assignStaff = mutation({
     }
 
     // Verify the target user exists and belongs to same org
-    const targetUser = await ctx.db.get(args.userId);
+    const targetUser = await ctx.db.get("users", args.userId);
     if (!targetUser) {
       throw new ConvexError("User not found");
     }
@@ -136,7 +135,7 @@ export const unassignStaff = mutation({
     }
 
     // Delete the assignment
-    await ctx.db.delete(assignment._id);
+    await ctx.db.delete("staffCustomerAssignments", assignment._id);
 
     return { success: true };
   },

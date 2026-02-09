@@ -1,4 +1,5 @@
 import { AppSidebar } from "./app-sidebar";
+import type {ReactNode} from "react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -13,14 +14,13 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { type ReactNode } from "react";
 
 interface MainLayoutProps {
   children: ReactNode;
-  breadcrumbs?: {
+  breadcrumbs?: Array<{
     label: string;
     href?: string;
-  }[];
+  }>;
 }
 
 export function MainLayout({ children, breadcrumbs }: MainLayoutProps) {

@@ -1,14 +1,14 @@
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
 import { getAuth } from '@workos/authkit-tanstack-react-start';
 import { useState } from 'react';
-import { useQuery, useAction } from 'convex/react';
+import { useAction, useQuery } from 'convex/react';
+import { Building2, CheckCircle2, Loader2 } from 'lucide-react';
 import { api } from '../../convex/_generated/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Building2, Loader2, CheckCircle2 } from 'lucide-react';
 
 export const Route = createFileRoute('/onboarding')({
   loader: async () => {

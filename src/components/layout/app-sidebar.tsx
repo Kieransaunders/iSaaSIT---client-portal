@@ -1,16 +1,17 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
-import { api } from "../../../convex/_generated/api";
 import {
-  Building2,
-  Users,
-  Settings,
-  LayoutDashboard,
-  CreditCard,
-  ChevronDown,
-  UserCircle,
   BookOpen,
+  Building2,
+  ChevronDown,
+  CreditCard,
+  LayoutDashboard,
+  Settings,
+  UserCircle,
+  Users,
 } from "lucide-react";
+import { useAuth } from "@workos/authkit-tanstack-react-start/client";
+import { api } from "../../../convex/_generated/api";
 import { BLOG_URL, DOCS_URL } from "@/lib/constants";
 import {
   Sidebar,
@@ -33,7 +34,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useAuth } from "@workos/authkit-tanstack-react-start/client";
 
 // Navigation items for the sidebar
 const mainNavItems = [

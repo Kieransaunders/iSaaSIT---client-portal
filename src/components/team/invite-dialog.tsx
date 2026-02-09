@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useAction, useQuery } from 'convex/react';
+import { AlertCircle, Loader2 } from 'lucide-react';
 import { api } from '../../../convex/_generated/api';
+import type { Id } from '../../../convex/_generated/dataModel';
 import {
   Dialog,
   DialogContent,
@@ -20,8 +22,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, AlertCircle } from 'lucide-react';
-import type { Id } from '../../../convex/_generated/dataModel';
 
 interface InviteDialogProps {
   open: boolean;

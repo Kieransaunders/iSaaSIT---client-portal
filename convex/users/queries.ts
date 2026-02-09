@@ -1,11 +1,12 @@
-import { query } from "../_generated/server";
 import { ConvexError } from "convex/values";
+import { query } from "../_generated/server";
 
 /**
  * List all members of the current user's organization
  * Admin-only query that includes both active and removed users
  */
 export const listOrgMembers = query({
+  args: {},
   handler: async (ctx) => {
     // Get authenticated user
     const identity = await ctx.auth.getUserIdentity();
@@ -66,6 +67,7 @@ export const listOrgMembers = query({
  * Admin-only query for team page tab counts
  */
 export const getOrgMemberCounts = query({
+  args: {},
   handler: async (ctx) => {
     // Get authenticated user
     const identity = await ctx.auth.getUserIdentity();

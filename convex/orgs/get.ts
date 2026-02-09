@@ -1,10 +1,11 @@
-import { query, internalQuery } from "../_generated/server";
-import { v, ConvexError } from "convex/values";
+import { ConvexError, v } from "convex/values";
+import { internalQuery, query } from "../_generated/server";
 
 /**
  * Get the current user's organization
  */
 export const getMyOrg = query({
+  args: {},
   handler: async (ctx) => {
     const user = await ctx.auth.getUserIdentity();
     if (!user) {
@@ -24,7 +25,7 @@ export const getMyOrg = query({
     }
 
     // Get org details
-    const org = await ctx.db.get(userRecord.orgId);
+    const org = await ctx.db.get("orgs", userRecord.orgId);
     if (!org) {
       return null;
     }
@@ -59,7 +60,7 @@ export const getOrgById = query({
       return null;
     }
 
-    const org = await ctx.db.get(userRecord.orgId);
+    const org = await ctx.db.get("orgs", userRecord.orgId);
     return org;
   },
 });
@@ -69,6 +70,7 @@ export const getOrgById = query({
  * Used to determine if user should be redirected to onboarding
  */
 export const hasOrg = query({
+  args: {},
   handler: async (ctx) => {
     const user = await ctx.auth.getUserIdentity();
     if (!user) {
@@ -108,7 +110,7 @@ export const getMyOrgInternal = internalQuery({
       return null;
     }
 
-    const org = await ctx.db.get(userRecord.orgId);
+    const org = await ctx.db.get("orgs", userRecord.orgId);
     return org;
   },
 });

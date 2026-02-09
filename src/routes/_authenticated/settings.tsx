@@ -1,14 +1,14 @@
 import { createFileRoute } from '@tanstack/react-router';
+import { Bell, Building2, Loader2, Settings, Shield } from 'lucide-react';
+import { useAction, useQuery } from 'convex/react';
+import { useEffect, useState } from 'react';
+import { api } from '../../../convex/_generated/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import { Settings, Building2, Bell, Shield, Loader2 } from 'lucide-react';
-import { useQuery, useAction } from 'convex/react';
-import { api } from '../../../convex/_generated/api';
-import { useState, useEffect } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export const Route = createFileRoute('/_authenticated/settings')({

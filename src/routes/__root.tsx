@@ -1,21 +1,32 @@
 import { HeadContent, Outlet, Scripts, createRootRouteWithContext } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
 import { getAuth } from '@workos/authkit-tanstack-react-start';
-import { ThemeProvider } from '@/components/providers/theme-provider';
+import { AuthKitProvider, useAccessToken, useAuth } from '@workos/authkit-tanstack-react-start/client';
+import { ConvexProviderWithAuth } from 'convex/react';
+import { useCallback, useMemo } from 'react';
 import appCssUrl from '../app.css?url';
 import type { QueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import type { ConvexReactClient } from 'convex/react';
 import type { ConvexQueryClient } from '@convex-dev/react-query';
+import { ThemeProvider } from '@/components/providers/theme-provider';
 
 const fetchWorkosAuth = createServerFn({ method: 'GET' }).handler(async () => {
-  const auth = await getAuth();
-  const { user } = auth;
+  try {
+    const auth = await getAuth();
+    const { user } = auth;
 
-  return {
-    userId: user?.id ?? null,
-    token: user ? auth.accessToken : null,
-  };
+    return {
+      userId: user?.id ?? null,
+      token: user ? auth.accessToken : null,
+    };
+  } catch (error) {
+    // User is not authenticated - return null values
+    return {
+      userId: null,
+      token: null,
+    };
+  }
 });
 
 export const Route = createRootRouteWithContext<{
@@ -57,12 +68,43 @@ export const Route = createRootRouteWithContext<{
 });
 
 function RootComponent() {
+  const { convexQueryClient } = Route.useRouteContext();
+
   return (
-    <ThemeProvider defaultTheme="system" storageKey="isaasit-theme">
-      <RootDocument>
-        <Outlet />
-      </RootDocument>
-    </ThemeProvider>
+    <AuthKitProvider>
+      <ConvexProviderWithAuth client={convexQueryClient.convexClient} useAuth={useAuthFromWorkOS}>
+        <ThemeProvider defaultTheme="system" storageKey="isaasit-theme">
+          <RootDocument>
+            <Outlet />
+          </RootDocument>
+        </ThemeProvider>
+      </ConvexProviderWithAuth>
+    </AuthKitProvider>
+  );
+}
+
+function useAuthFromWorkOS() {
+  const { loading, user } = useAuth();
+  const { accessToken, getAccessToken } = useAccessToken();
+
+  const fetchAccessToken = useCallback(
+    async ({ forceRefreshToken }: { forceRefreshToken: boolean }) => {
+      if (!accessToken || forceRefreshToken) {
+        return (await getAccessToken()) ?? null;
+      }
+
+      return accessToken;
+    },
+    [accessToken, getAccessToken],
+  );
+
+  return useMemo(
+    () => ({
+      isLoading: loading,
+      isAuthenticated: !!user,
+      fetchAccessToken,
+    }),
+    [loading, user, fetchAccessToken],
   );
 }
 

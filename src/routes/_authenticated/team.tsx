@@ -1,14 +1,14 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useQuery, useMutation, useAction } from 'convex/react';
-import { api } from '../../../convex/_generated/api';
+import { useAction, useMutation, useQuery } from 'convex/react';
 import { useState } from 'react';
+import { Plus } from 'lucide-react';
+import { api } from '../../../convex/_generated/api';
+import type { Id } from '../../../convex/_generated/dataModel';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus } from 'lucide-react';
 import { InviteDialog } from '@/components/team/invite-dialog';
-import { TeamTable, PendingTable } from '@/components/team/team-table';
-import type { Id } from '../../../convex/_generated/dataModel';
+import { PendingTable, TeamTable } from '@/components/team/team-table';
 
 export const Route = createFileRoute('/_authenticated/team')({
   component: TeamPage,
