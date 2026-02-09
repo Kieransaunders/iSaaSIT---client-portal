@@ -92,6 +92,15 @@ Plans:
 
 **Goal:** Working Lemon Squeezy subscriptions with usage cap enforcement
 
+**Plans:** 5 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Webhook handler + signature verification + subscription sync
+- [ ] 03-02-PLAN.md — Checkout action + cancel action + billing usage queries
+- [ ] 03-03-PLAN.md — Billing page UI with real data + checkout overlay
+- [ ] 03-04-PLAN.md — Cap enforcement UX + warning banners + inline upgrade prompts
+- [ ] 03-05-PLAN.md — End-to-end verification checkpoint
+
 **Requirements:**
 - BILL-01: Org has subscription status synced from Lemon Squeezy
 - BILL-02: Admin can upgrade via Lemon Squeezy checkout
@@ -101,19 +110,20 @@ Plans:
 - BILL-06: Billing page shows real usage from Convex
 
 **Success Criteria:**
-1. Admin clicks "Upgrade" → redirected to Lemon Squeezy checkout
+1. Admin clicks "Upgrade" → Lemon Squeezy checkout overlay opens
 2. After payment → org subscription status = "active"
 3. Plan caps (maxCustomers, maxStaff, maxClients) updated from plan
-4. Billing page shows real counts vs limits
+4. Billing page shows real counts vs limits with color-coded progress bars
 5. Creating staff/client blocked when at limit with upgrade prompt
 6. Subscription cancelled → status updates via webhook
 
 **Dependencies:** Phase 2 (users exist to count against caps)
 
 **Notes:**
-- Lemon Squeezy webhook URL: /api/webhooks/lemonsqueezy
-- Webhook signature verification required
-- Plan caps stored in Lemon Squeezy product metadata
+- Lemon Squeezy webhook at Convex HTTP endpoint /lemonsqueezy/webhook
+- Webhook signature verification with Web Crypto API (HMAC-SHA256)
+- Plan limits hardcoded in variant ID mapping (LS doesn't support variant metadata)
+- Checkout overlay embedded in-app via Lemon.js CDN
 - Test with Lemon Squeezy test mode first
 
 ---
