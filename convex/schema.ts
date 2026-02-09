@@ -21,6 +21,12 @@ export default defineSchema({
       v.literal("paused")
     )),
     planId: v.optional(v.string()),
+    // Lemon Squeezy customer ID (for customer portal URL generation)
+    lemonSqueezyCustomerId: v.optional(v.string()),
+    // Trial end timestamp (for UI display of trial status)
+    trialEndsAt: v.optional(v.number()),
+    // Subscription end timestamp (set when cancelled, access until this date)
+    endsAt: v.optional(v.number()),
     // Usage caps from plan metadata
     maxCustomers: v.number(),
     maxStaff: v.number(),

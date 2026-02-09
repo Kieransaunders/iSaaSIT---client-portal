@@ -10,6 +10,7 @@
 
 import type * as assignments_mutations from "../assignments/mutations.js";
 import type * as assignments_queries from "../assignments/queries.js";
+import type * as billing_queries from "../billing/queries.js";
 import type * as customers_crud from "../customers/crud.js";
 import type * as http from "../http.js";
 import type * as invitations_internal from "../invitations/internal.js";
@@ -18,6 +19,8 @@ import type * as invitations_queries from "../invitations/queries.js";
 import type * as invitations_send from "../invitations/send.js";
 import type * as lemonsqueezy_plans from "../lemonsqueezy/plans.js";
 import type * as lemonsqueezy_signature from "../lemonsqueezy/signature.js";
+import type * as lemonsqueezy_sync from "../lemonsqueezy/sync.js";
+import type * as lemonsqueezy_webhook from "../lemonsqueezy/webhook.js";
 import type * as myFunctions from "../myFunctions.js";
 import type * as orgs_create from "../orgs/create.js";
 import type * as orgs_get from "../orgs/get.js";
@@ -40,6 +43,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   "assignments/mutations": typeof assignments_mutations;
   "assignments/queries": typeof assignments_queries;
+  "billing/queries": typeof billing_queries;
   "customers/crud": typeof customers_crud;
   http: typeof http;
   "invitations/internal": typeof invitations_internal;
@@ -48,6 +52,8 @@ declare const fullApi: ApiFromModules<{
   "invitations/send": typeof invitations_send;
   "lemonsqueezy/plans": typeof lemonsqueezy_plans;
   "lemonsqueezy/signature": typeof lemonsqueezy_signature;
+  "lemonsqueezy/sync": typeof lemonsqueezy_sync;
+  "lemonsqueezy/webhook": typeof lemonsqueezy_webhook;
   myFunctions: typeof myFunctions;
   "orgs/create": typeof orgs_create;
   "orgs/get": typeof orgs_get;
