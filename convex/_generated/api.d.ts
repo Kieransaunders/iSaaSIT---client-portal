@@ -21,6 +21,8 @@ import type * as orgs_create from "../orgs/create.js";
 import type * as orgs_get from "../orgs/get.js";
 import type * as orgs_update from "../orgs/update.js";
 import type * as users_create from "../users/create.js";
+import type * as users_manage from "../users/manage.js";
+import type * as users_queries from "../users/queries.js";
 import type * as users_sync from "../users/sync.js";
 import type * as webhooks_workos from "../webhooks/workos.js";
 import type * as workos_createOrg from "../workos/createOrg.js";
@@ -47,6 +49,8 @@ declare const fullApi: ApiFromModules<{
   "orgs/get": typeof orgs_get;
   "orgs/update": typeof orgs_update;
   "users/create": typeof users_create;
+  "users/manage": typeof users_manage;
+  "users/queries": typeof users_queries;
   "users/sync": typeof users_sync;
   "webhooks/workos": typeof webhooks_workos;
   "workos/createOrg": typeof workos_createOrg;
