@@ -52,6 +52,7 @@ export default defineConfig({
             { label: 'Convex Backend', slug: 'development/convex' },
             { label: 'Frontend Guide', slug: 'development/frontend' },
             { label: 'Environment Setup', slug: 'development/environment' },
+            { label: 'Tools', slug: 'development/tools' },
           ],
         },
         {
