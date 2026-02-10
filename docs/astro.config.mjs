@@ -15,15 +15,13 @@ export default defineConfig({
   integrations: [
     starlight({
       title: 'iSaaSIT',
-      description: 'Documentation for iSaaSIT - Open source SaaS starter kit for agencies',
+      description: 'Documentation for iSaaSIT - SaaS starter pack for agencies building client portals',
       logo: {
         src: './src/assets/houston.webp',
         replacesTitle: true,
       },
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/Kieransaunders/iSaaSIT' },
-        { icon: 'twitter', label: 'Twitter', href: 'https://twitter.com' },
-        { icon: 'discord', label: 'Discord', href: 'https://discord.gg' },
       ],
       sidebar: [
         {
