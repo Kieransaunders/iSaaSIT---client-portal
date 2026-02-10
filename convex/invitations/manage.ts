@@ -57,7 +57,19 @@ export const revokeInvitation = action({
       const workos = new WorkOS(process.env.WORKOS_API_KEY);
 
       // Revoke invitation in WorkOS
-      await workos.userManagement.revokeInvitation(invitation.workosInvitationId);
+      try {
+        await workos.userManagement.revokeInvitation(invitation.workosInvitationId);
+      } catch (error) {
+        const status =
+          typeof error === "object" && error !== null && "status" in error
+            ? (error as { status?: number }).status
+            : undefined;
+
+        // If the invite was already accepted or deleted in WorkOS, proceed with local cleanup
+        if (status !== 404 && status !== 409) {
+          throw error;
+        }
+      }
 
       // Delete the pending invitation from Convex
       await ctx.runMutation(internal.invitations.internal.deletePendingInvitation, {

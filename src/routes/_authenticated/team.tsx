@@ -1,7 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useAction, useMutation, useQuery } from 'convex/react';
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { AlertCircle, Plus } from 'lucide-react';
+import { toast } from 'sonner';
 import { api } from '../../../convex/_generated/api';
 import type { Id } from '../../../convex/_generated/dataModel';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { InviteDialog } from '@/components/team/invite-dialog';
 import { PendingTable, TeamTable } from '@/components/team/team-table';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export const Route = createFileRoute('/_authenticated/team')({
   component: TeamPage,
@@ -18,12 +20,14 @@ function TeamPage() {
   const [isInviteOpen, setIsInviteOpen] = useState(false);
 
   // Queries
-  const members = useQuery(api.users.queries.listOrgMembers);
-  const counts = useQuery(api.users.queries.getOrgMemberCounts);
-  const pendingInvitations = useQuery(api.invitations.queries.listPendingInvitations);
+  const hasOrgCheck = useQuery(api.orgs.get.hasOrg);
+  const isAdmin = hasOrgCheck?.role === 'admin';
+  const members = useQuery(api.users.queries.listOrgMembers, isAdmin ? {} : 'skip');
+  const counts = useQuery(api.users.queries.getOrgMemberCounts, isAdmin ? {} : 'skip');
+  const pendingInvitations = useQuery(api.invitations.queries.listPendingInvitations, isAdmin ? {} : 'skip');
 
   // Mutations
-  const removeUser = useMutation(api.users.manage.removeUser);
+  const removeUser = useAction(api.users.manageActions.removeUser);
   const restoreUser = useMutation(api.users.manage.restoreUser);
 
   // Actions
@@ -39,37 +43,71 @@ function TeamPage() {
   const handleRemove = async (userId: Id<'users'>) => {
     try {
       await removeUser({ userId });
+      toast.success('User deleted successfully');
     } catch (error) {
-      console.error('Failed to remove user:', error);
+      toast.error('Failed to delete user. Please try again.');
     }
   };
 
   const handleRestore = async (userId: Id<'users'>) => {
     try {
       await restoreUser({ userId });
+      toast.success('User restored successfully');
     } catch (error) {
-      console.error('Failed to restore user:', error);
+      toast.error('Failed to restore user. Please try again.');
     }
   };
 
   const handleRevoke = async (invitationId: Id<'pendingInvitations'>) => {
     try {
       await revokeInvitation({ invitationId });
+      toast.success('Invitation deleted successfully');
     } catch (error) {
-      console.error('Failed to revoke invitation:', error);
+      toast.error('Failed to revoke invitation. Please try again.');
     }
   };
 
   const handleResend = async (invitationId: Id<'pendingInvitations'>) => {
     try {
       await resendInvitation({ invitationId });
+      toast.success('Invitation resent successfully');
     } catch (error) {
-      console.error('Failed to resend invitation:', error);
+      toast.error('Failed to resend invitation. Please try again.');
     }
   };
 
   // Loading state
-  const isLoading = members === undefined || counts === undefined;
+  const isLoading = members === undefined || counts === undefined || hasOrgCheck === undefined;
+
+  if (hasOrgCheck === undefined) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (!hasOrgCheck.hasOrg) {
+    return (
+      <Alert className="border-amber-500 bg-amber-50 dark:bg-amber-950/20">
+        <AlertCircle className="h-4 w-4 text-amber-600" />
+        <AlertDescription className="text-amber-900 dark:text-amber-100">
+          You&apos;re not assigned to an organization yet. Ask an admin to invite you or complete onboarding.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <Alert className="border-amber-500 bg-amber-50 dark:bg-amber-950/20">
+        <AlertCircle className="h-4 w-4 text-amber-600" />
+        <AlertDescription className="text-amber-900 dark:text-amber-100">
+          Team management is only available to organization admins.
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -101,15 +139,30 @@ function TeamPage() {
           </TabsList>
 
           <TabsContent value="all" className="mt-6">
-            <TeamTable members={allActiveMembers} onRemove={handleRemove} />
+            <TeamTable
+              members={allActiveMembers}
+              onRemove={handleRemove}
+              isAdmin={isAdmin}
+              currentUserId={hasOrgCheck?.userId}
+            />
           </TabsContent>
 
           <TabsContent value="staff" className="mt-6">
-            <TeamTable members={staffMembers} onRemove={handleRemove} />
+            <TeamTable
+              members={staffMembers}
+              onRemove={handleRemove}
+              isAdmin={isAdmin}
+              currentUserId={hasOrgCheck?.userId}
+            />
           </TabsContent>
 
           <TabsContent value="clients" className="mt-6">
-            <TeamTable members={clientMembers} onRemove={handleRemove} />
+            <TeamTable
+              members={clientMembers}
+              onRemove={handleRemove}
+              isAdmin={isAdmin}
+              currentUserId={hasOrgCheck?.userId}
+            />
           </TabsContent>
 
           <TabsContent value="pending" className="mt-6">

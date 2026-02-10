@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { Bell, Building2, Loader2, Settings, Shield } from 'lucide-react';
+import { AlertCircle, Bell, Building2, Loader2, Settings, Shield } from 'lucide-react';
 import { useAction, useQuery } from 'convex/react';
 import { useEffect, useState } from 'react';
 import { api } from '../../../convex/_generated/api';
@@ -16,7 +16,9 @@ export const Route = createFileRoute('/_authenticated/settings')({
 });
 
 function SettingsPage() {
-  const org = useQuery(api.orgs.get.getMyOrg);
+  const hasOrgCheck = useQuery(api.orgs.get.hasOrg);
+  const isAdmin = hasOrgCheck?.role === 'admin';
+  const org = useQuery(api.orgs.get.getMyOrg, isAdmin ? {} : 'skip');
   const updateOrg = useAction(api.workos.updateOrg.updateOrganization);
 
   const [orgName, setOrgName] = useState('');
@@ -63,6 +65,36 @@ function SettingsPage() {
   };
 
   // Show loading state
+  if (hasOrgCheck === undefined) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!hasOrgCheck.hasOrg) {
+    return (
+      <Alert className="border-amber-500 bg-amber-50 dark:bg-amber-950/20">
+        <AlertCircle className="h-4 w-4 text-amber-600" />
+        <AlertDescription className="text-amber-900 dark:text-amber-100">
+          You&apos;re not assigned to an organization yet. Ask an admin to invite you or complete onboarding.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <Alert className="border-amber-500 bg-amber-50 dark:bg-amber-950/20">
+        <AlertCircle className="h-4 w-4 text-amber-600" />
+        <AlertDescription className="text-amber-900 dark:text-amber-100">
+          Settings are only available to organization admins.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
   if (org === undefined) {
     return (
       <div className="flex items-center justify-center py-12">

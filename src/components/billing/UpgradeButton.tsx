@@ -1,6 +1,9 @@
-import {  useEffect, useState } from "react";
-import type {ReactNode} from "react";
+import { useEffect, useState } from "react";
+import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+
+import { getCheckoutUrl, isPlanAvailable } from "@/config/billing";
 
 // TypeScript declarations for Lemon.js
 declare global {
@@ -15,7 +18,7 @@ declare global {
 }
 
 interface UpgradeButtonProps {
-  variantId: string;
+  planId: string;
   email: string;
   orgName: string;
   orgConvexId: string;
@@ -24,13 +27,15 @@ interface UpgradeButtonProps {
 }
 
 export function UpgradeButton({
-  variantId,
+  planId,
   email,
   orgName,
   orgConvexId,
   disabled,
   children = "Upgrade Plan",
-}: UpgradeButtonProps) {
+  onClick,
+  ...props
+}: UpgradeButtonProps & React.ComponentProps<typeof Button>) {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
@@ -56,29 +61,42 @@ export function UpgradeButton({
   }, []);
 
   const handleUpgrade = () => {
-    if (!isLoaded || !window.LemonSqueezy) return;
-
-    // Get store slug from environment
-    const storeSlug = import.meta.env.VITE_LEMONSQUEEZY_STORE_SLUG;
-    if (!storeSlug) {
-      console.error("VITE_LEMONSQUEEZY_STORE_SLUG not configured");
+    if (!isLoaded || !window.LemonSqueezy) {
+      toast.error("Payment system is loading. Please try again in a moment.");
       return;
     }
 
-    // Build checkout URL with pre-filled data
-    const checkoutUrl = new URL(
-      `https://${storeSlug}.lemonsqueezy.com/checkout/buy/${variantId}`
-    );
-    checkoutUrl.searchParams.set("checkout[email]", email);
-    checkoutUrl.searchParams.set("checkout[name]", orgName);
-    checkoutUrl.searchParams.set("checkout[custom][org_convex_id]", orgConvexId);
+    // Check if plan is available
+    if (!isPlanAvailable(planId)) {
+      toast.error("This plan is not available. Please contact support.");
+      return;
+    }
+
+    // Get checkout URL from config
+    const checkoutUrl = getCheckoutUrl(planId, {
+      email,
+      orgName,
+      orgConvexId,
+    });
+
+    if (!checkoutUrl) {
+      toast.error("Unable to start checkout. Please try again later.");
+      return;
+    }
 
     // Open checkout overlay
-    window.LemonSqueezy.Url.Open(checkoutUrl.toString());
+    window.LemonSqueezy.Url.Open(checkoutUrl);
   };
 
   return (
-    <Button onClick={handleUpgrade} disabled={!isLoaded || disabled}>
+    <Button
+      onClick={(e) => {
+        handleUpgrade();
+        onClick?.(e);
+      }}
+      disabled={!isLoaded || disabled}
+      {...props}
+    >
       {children}
     </Button>
   );

@@ -1,162 +1,286 @@
 # Technology Stack
 
-**Analysis Date:** 2026-02-09
+> Core technologies, frameworks, and development workflow for iSaaSIT.
 
-## Languages
+## Languages and Runtimes
 
-**Primary:**
-- TypeScript 5.9.3 - All source code, frontend and backend
-- JSX/TSX - React component syntax used throughout UI layer
+| Language/Runtime | Version | Purpose |
+|-----------------|---------|---------|
+| **TypeScript** | 5.9.3 | Primary language for all source code |
+| **Node.js** | 22.x (via Netlify) | Server runtime for SSR and build |
+| **Deno** | (via Convex) | Convex function runtime |
+| **ES2022** | Target | JavaScript compilation target |
 
-**Secondary:**
-- JavaScript - Configuration files (vite.config.ts, eslint.config.mjs, etc.)
+### TypeScript Configuration
 
-## Runtime
+- **Config:** `tsconfig.json`
+- **Module:** ESNext with Bundler resolution
+- **Strict mode:** Enabled (strictNullChecks, strict)
+- **Path aliases:**
+  - `@/*` → `./src/*`
+  - `~/*` → `./src/*`
 
-**Environment:**
-- Node.js v24.12.0 (as of environment check, no pinned version in .nvmrc or package.json)
+## Core Frameworks and Libraries
 
-**Package Manager:**
-- npm - Primary package manager
-- Lockfile: `package-lock.json` (present, 581KB)
+### Frontend Stack
 
-## Frameworks
+| Framework/Library | Version | Purpose |
+|------------------|---------|---------|
+| **React** | 19.2.4 | UI component library |
+| **React DOM** | 19.2.4 | DOM rendering |
+| **TanStack Start** | 1.158.0 | Full-stack React framework with SSR |
+| **TanStack Router** | 1.158.0 | File-based routing |
+| **TanStack React Query** | 5.90.20 | Server state management |
 
-**Core:**
-- React 19.2.4 - UI framework with React DOM 19.2.4
-- TanStack Start 1.158.0 - Full-stack React meta-framework with file-based routing
-- TanStack React Router 1.158.0 - Type-safe routing layer
-- TanStack React Router SSR Query 1.158.0 - SSR and query integration
+### Backend Stack
 
-**Backend:**
-- Convex 1.31.7 - Backend-as-a-Service (BaaS) platform for database, server logic, and auth
-- Convex React integration via `convex/react` - Client library for queries, mutations, actions
-- Convex Query Client (@convex-dev/react-query) 0.1.0 - Integration bridge with TanStack React Query
+| Framework/Library | Version | Purpose |
+|------------------|---------|---------|
+| **Convex** | 1.31.7 | Serverless backend platform |
+| **@convex-dev/react-query** | 0.1.0 | Convex + React Query integration |
 
-**Authentication:**
-- WorkOS AuthKit (@workos/authkit-tanstack-react-start) 0.5.0 - Enterprise authentication and SSO
-- WorkOS Node SDK (@workos-inc/node) 8.1.0 - Server-side WorkOS API client
-- Custom JWT providers via Convex auth.config.ts - RS256 validation
+### Styling
 
-**Styling:**
-- Tailwind CSS 4.1.18 - Utility-first CSS framework
-- TailwindCSS PostCSS (@tailwindcss/postcss) 4.1.18 - PostCSS integration
-- Class Variance Authority 0.7.1 - CSS class composition for component variants
-- Tailwind Merge 3.4.0 - Utilities for merging Tailwind classes
-- Lucide React 0.563.0 - Icon library
-- Radix UI 1.4.3 and @radix-ui/react-slot 1.2.4 - Headless UI components
+| Framework/Library | Version | Purpose |
+|------------------|---------|---------|
+| **Tailwind CSS** | 4.1.18 | Utility-first CSS framework |
+| **@tailwindcss/postcss** | 4.1.18 | PostCSS plugin for Tailwind v4 |
+| **tw-animate-css** | 1.4.0 | Animation utilities |
+| **class-variance-authority** | 0.7.1 | Component variant management |
+| **tailwind-merge** | 3.4.0 | Tailwind class merging |
+| **clsx** | 2.1.1 | Conditional class utilities |
 
-**Data & State:**
-- TanStack React Query 5.90.20 - Server state management and caching
-- Convex react-query integration - Synced Convex data with React Query
+### UI Components
 
-**Data Validation:**
-- Convex values module (`convex/values`) - Schema validation with v.* validators
+| Framework/Library | Version | Purpose |
+|------------------|---------|---------|
+| **shadcn/ui** | (new-york style) | Component library system |
+| **Radix UI** | 1.4.3 | Headless UI primitives |
+| **@radix-ui/react-slot** | 1.2.4 | Slot component primitive |
+| **lucide-react** | 0.563.0 | Icon library |
 
-## Testing & Code Quality
+### Date Handling
 
-**Testing Framework:**
-- Not detected in dependencies - No explicit test runner configured
+| Library | Version | Purpose |
+|---------|---------|---------|
+| **date-fns** | 4.1.0 | Date manipulation utilities |
 
-**Linting & Formatting:**
-- TypeScript 5.9.3 - Type checking
-- ESLint with @tanstack/eslint-config 0.3.4 - Code linting
-- @convex-dev/eslint-plugin 1.1.1 - Convex-specific linting rules
-- Prettier 3.8.1 - Code formatting
+## Build Tools and Configuration
 
-**Type Checking:**
-- TypeScript strict mode enabled (`strict: true` in tsconfig.json)
-- Strict null checks enabled
-- JSX: "react-jsx" (React 17+ syntax)
-- Module resolution: Bundler (for modern bundlers)
+### Vite Configuration
 
-## Build & Development Tools
+**File:** `vite.config.ts`
 
-**Build:**
-- Vite 7.3.1 - Frontend bundler and dev server
-- @vitejs/plugin-react 5.1.3 - React support for Vite
-- Vite TSConfig Paths 6.0.5 - TypeScript path resolution
-- Convex build integration - Handles backend build
-
-**Development:**
-- npm-run-all2 8.0.4 - Parallel script execution for dev:frontend and dev:backend
-- Convex dev CLI - Local development backend
-- TanStack React Router DevTools 1.158.0 - Router debugging
-- dotenv 17.2.3 - Environment variable loading
-
-**Hosting & Deployment:**
-- Netlify - Deployment target (via .netlify/netlify.toml)
-- @netlify/vite-plugin-tanstack-start 1.2.8 - Netlify Functions integration for SSR
-
-## Key Dependencies
-
-**Critical:**
-- Convex 1.31.7 - Entire backend, database, real-time sync, auth hooks
-- TanStack Start 1.158.0 - Full-stack framework, routing, SSR orchestration
-- WorkOS AuthKit 0.5.0 - Enterprise authentication without building auth from scratch
-- React 19.2.4 - Component foundation
-
-**Infrastructure:**
-- TanStack React Query 5.90.20 - Server state synchronization and caching
-- TypeScript 5.9.3 - Type safety across entire codebase
-
-**UI Components:**
-- Radix UI 1.4.3 - Unstyled, accessible component primitives
-- Class Variance Authority 0.7.1 - Type-safe component styling
-- Lucide React 0.563.0 - Icon SVGs (563+ icons)
-
-## Configuration
-
-**Environment:**
-- `.env.local` or `.env` loaded by Vite via dotenv
-- Critical vars:
-  - `WORKOS_CLIENT_ID` - WorkOS application ID
-  - `WORKOS_API_KEY` - WorkOS API key for backend actions
-  - `WORKOS_COOKIE_PASSWORD` - Session encryption (min 32 characters)
-  - `WORKOS_REDIRECT_URI` - OAuth callback URL (http://localhost:3000/callback in dev)
-  - `VITE_CONVEX_URL` - Convex deployment URL (prefixed with VITE_ to expose to frontend)
-
-**Build Configuration:**
-- `vite.config.ts` - Main Vite configuration with plugins and port 3000
-- `tsconfig.json` - TypeScript with path aliases (@/* and ~/* both map to ./src/*)
-- `tailwind.config.ts` or auto-generated - Tailwind v4 configuration
-- `prettier.config.mjs` - Code formatting rules
-- `eslint.config.mjs` - ESLint rules
-- `postcss.config.mjs` - PostCSS for Tailwind
-- `convex.json` - Convex configuration with AuthKit setup for dev/preview/prod environments
-
-**Convex Auth Config:**
-- `convex/auth.config.ts` - Defines JWT providers:
-  - WorkOS SSO provider: Issues from https://api.workos.com/, RS256 algorithm
-  - WorkOS User Management provider: Issues from https://api.workos.com/user_management/{clientId}
-  - Validates against https://api.workos.com/sso/jwks/{clientId}
-
-## Platform Requirements
-
-**Development:**
-- Node.js v24+ (tested, no minimum enforced in package.json)
-- npm v10+ (assumed, lockfile format suggests modern npm)
-- OS: Cross-platform (darwin/linux/windows compatible)
-- 2GB+ free disk (node_modules + Convex cache)
-
-**Production:**
-- Convex deployment (cloud, managed by Convex Inc)
-- Netlify deployment (via @netlify/vite-plugin-tanstack-start)
-- WorkOS account (for authentication endpoints)
-- HTTPS required (Netlify handles SSL)
-
-## Build Scripts
-
-```bash
-npm run dev              # Parallel frontend (Vite) + backend (Convex)
-npm run dev:frontend    # Vite dev server only
-npm run dev:backend     # Convex dev CLI
-npm run build           # Production build (Vite)
-npm run lint            # TypeScript check + ESLint
-npm run format          # Prettier code formatting
-npm run setup           # Initial configuration wizard
+```typescript
+// Key plugins:
+- vite-tsconfig-paths      // TypeScript path resolution
+- @tanstack/react-start/plugin/vite  // TanStack Start
+- @netlify/vite-plugin-tanstack-start // Netlify SSR adapter
+- @vitejs/plugin-react     // React Fast Refresh
 ```
 
----
+**Server:** Port 3000 (development)
 
-*Stack analysis: 2026-02-09*
+### PostCSS Configuration
+
+**File:** `postcss.config.mjs`
+
+```javascript
+// Single plugin:
+- @tailwindcss/postcss   // Tailwind CSS v4 processing
+```
+
+### ESLint Configuration
+
+**File:** `eslint.config.mjs`
+
+- Extends `@tanstack/eslint-config`
+- Includes `@convex-dev/eslint-plugin`
+- Ignores: `convex/_generated`, `routeTree.gen.ts`
+
+### Prettier Configuration
+
+**File:** `prettier.config.mjs`
+
+- Single quotes
+- Trailing commas (all)
+- Print width: 120
+- Semicolons: true
+
+## Package.json Dependencies Overview
+
+### Production Dependencies (18 packages)
+
+```json
+// Core Framework
+"@tanstack/react-start": "^1.158.0"
+"@tanstack/react-router": "^1.158.0"
+"react": "^19.2.4"
+"react-dom": "^19.2.4"
+
+// State Management & Data
+"@tanstack/react-query": "^5.90.20"
+"@convex-dev/react-query": "^0.1.0"
+"convex": "^1.31.7"
+
+// Authentication
+"@workos/authkit-tanstack-react-start": "0.5.0"
+"@workos-inc/node": "^8.1.0"
+
+// Billing
+"@lemonsqueezy/lemonsqueezy.js": "^4.0.0"
+
+// UI & Styling
+"tailwindcss": "^4.1.18"
+"tailwind-merge": "^3.4.0"
+"class-variance-authority": "^0.7.1"
+"clsx": "^2.1.1"
+"lucide-react": "^0.563.0"
+"radix-ui": "^1.4.3"
+"@radix-ui/react-slot": "^1.2.4"
+"tw-animate-css": "^1.4.0"
+
+// Utilities
+"date-fns": "^4.1.0"
+```
+
+### Development Dependencies (15 packages)
+
+```json
+// Build Tools
+"vite": "^7.3.1"
+"typescript": "^5.9.3"
+"@vitejs/plugin-react": "^5.1.3"
+"vite-tsconfig-paths": "^6.0.5"
+
+// Netlify Integration
+"@netlify/vite-plugin-tanstack-start": "^1.2.8"
+
+// Tailwind v4
+"@tailwindcss/postcss": "^4.1.18"
+
+// Linting & Formatting
+"@tanstack/eslint-config": "^0.3.4"
+"@convex-dev/eslint-plugin": "^1.1.1"
+"prettier": "^3.8.1"
+"eslint": "(from @tanstack/eslint-config)"
+
+// Type Definitions
+"@types/node": "^24.10.10"
+"@types/react": "^19.2.10"
+"@types/react-dom": "^19.2.3"
+
+// Dev Utilities
+"dotenv": "^17.2.3"
+"npm-run-all2": "^8.0.4"
+
+// Debug Tools
+"@tanstack/react-router-devtools": "^1.158.0"
+```
+
+## Development Workflow
+
+### NPM Scripts
+
+```bash
+# Development (runs frontend + backend in parallel)
+npm run dev
+
+# Individual development servers
+npm run dev:frontend      # Vite dev server (port 3000)
+npm run dev:backend       # Convex dev server
+npm run dev:all           # Frontend + backend + docs
+
+# Documentation	npm run dev:docs          # Astro dev server (port 4321)
+
+# Building
+npm run build             # Production build (Vite)
+npm run build:docs        # Build docs site
+npm run build:combined    # Build app + docs together
+
+# Preview
+npm run start             # Start production server
+npm run preview:docs      # Preview built docs
+
+# Code Quality
+npm run lint              # Type check + ESLint
+npm run format            # Prettier formatting
+
+# Setup
+npm run setup             # Project setup
+npm run postinstall       # Post-install hooks
+```
+
+### File Structure
+
+```
+src/
+├── routes/                    # TanStack Router file-based routes
+│   ├── __root.tsx            # Root layout with auth setup
+│   ├── index.tsx             # Home page
+│   ├── callback.tsx          # WorkOS OAuth callback
+│   ├── _authenticated.tsx    # Protected route layout
+│   └── _authenticated/       # Protected pages
+│       ├── dashboard.tsx
+│       ├── billing.tsx
+│       ├── customers.tsx
+│       ├── team.tsx
+│       └── settings.tsx
+├── components/
+│   └── ui/                   # shadcn/ui components (25 components)
+├── router.tsx                # Router configuration
+├── start.ts                  # TanStack Start entry
+└── app.css                   # Global styles (Tailwind v4)
+
+convex/
+├── schema.ts                 # Database schema
+├── auth.config.ts            # JWT auth configuration
+├── http.ts                   # HTTP routes/webhooks
+├── myFunctions.ts            # Example functions
+├── _generated/               # Auto-generated types
+└── [feature]/                # Feature-organized functions
+    ├── queries.ts
+    ├── mutations.ts
+    └── actions.ts
+```
+
+### Key Conventions
+
+1. **Routing:** File-based with TanStack Router
+   - `index.tsx` → `/`
+   - `_authenticated.tsx` → Layout wrapper
+   - `$param.tsx` → Dynamic routes
+
+2. **Convex Functions:** Organized by feature
+   - `query` - Read operations
+   - `mutation` - Write operations
+   - `action` - External API calls
+
+3. **Components:** shadcn/ui pattern
+   - Use `class-variance-authority` for variants
+   - Tailwind for styling
+   - Radix UI for primitives
+
+4. **Styling:** Tailwind CSS v4
+   - CSS-first configuration in `app.css`
+   - OKLCH color format
+   - CSS variables for theming
+   - Dark mode support via `prefers-color-scheme`
+
+## Documentation Site Stack
+
+Located in `docs/` directory:
+
+| Technology | Version | Purpose |
+|-----------|---------|---------|
+| **Astro** | 5.6.1 | Static site generator |
+| **Starlight** | 0.37.6 | Documentation theme |
+| **@astrojs/starlight** | 0.37.6 | Starlight integration |
+| **@astrojs/tailwind** | 6.0.2 | Tailwind integration |
+| **@astrojs/sitemap** | 3.7.0 | Sitemap generation |
+| **starlight-blog** | 0.25.2 | Blog plugin |
+| **sharp** | 0.34.2 | Image optimization |
+
+**Dev Port:** 4321
+
+**Build Output:** `dist/client/docs/`

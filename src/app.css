@@ -1,6 +1,9 @@
 @import 'tailwindcss';
 @import "tw-animate-css";
 
+/* Plus Jakarta Sans - UI/UX Pro Max Design System */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
@@ -89,7 +92,7 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Plus Jakarta Sans', Arial, Helvetica, sans-serif;
 }
 
 .dark {

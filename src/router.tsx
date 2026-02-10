@@ -29,8 +29,34 @@ export function getRouter() {
     defaultPreload: 'intent',
     scrollRestoration: true,
     defaultPreloadStaleTime: 0, // Let React Query handle all caching
-    defaultErrorComponent: (err) => <p>{err.error.stack}</p>,
-    defaultNotFoundComponent: () => <p>not found</p>,
+    defaultErrorComponent: ({ error }) => (
+      <div className="p-6 text-center">
+        <h1 className="text-2xl font-bold text-destructive mb-2">Something went wrong</h1>
+        <p className="text-muted-foreground mb-4">
+          {error instanceof Error ? error.message : 'An unexpected error occurred'}
+        </p>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+        >
+          Reload Page
+        </button>
+      </div>
+    ),
+    defaultNotFoundComponent: () => (
+      <div className="p-6 text-center">
+        <h1 className="text-2xl font-bold mb-2">Page Not Found</h1>
+        <p className="text-muted-foreground mb-4">
+          The page you're looking for doesn't exist.
+        </p>
+        <a
+          href="/"
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 inline-block"
+        >
+          Go Home
+        </a>
+      </div>
+    ),
     context: { queryClient, convexClient: convex, convexQueryClient },
   });
   setupRouterSsrQueryIntegration({ router, queryClient });

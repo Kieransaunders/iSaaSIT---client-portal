@@ -16,9 +16,28 @@ export const updateOrganization = action({
       throw new ConvexError("Not authenticated");
     }
 
+    const workosUserId = identity.subject;
+
+    // Get user record and verify admin role
+    const userRecord = await ctx.runQuery(internal.invitations.internal.getUserRecord, {
+      workosUserId,
+    });
+
+    if (!userRecord) {
+      throw new ConvexError("User record not found");
+    }
+
+    if (userRecord.role !== "admin") {
+      throw new ConvexError("Admin role required to update organization");
+    }
+
+    if (!userRecord.orgId) {
+      throw new ConvexError("User not in organization");
+    }
+
     // Get user's org from Convex
     const userOrg = await ctx.runQuery(internal.orgs.get.getMyOrgInternal, {
-      workosUserId: identity.subject,
+      workosUserId,
     });
 
     if (!userOrg) {

@@ -33,23 +33,25 @@
 - [x] **SCOPE-03**: Client sees only their customer
 - [x] **SCOPE-04**: Access denied if user tries to access other customer
 
-### Team Management (Not Started)
+### Team Management (In Progress)
 
-- [ ] **TEAM-01**: Admin can invite staff users
-- [ ] **TEAM-02**: Admin can invite client users linked to customer
-- [ ] **TEAM-03**: Staff/Client receives email invite
-- [ ] **TEAM-04**: Invited user completes signup via WorkOS
+- [x] **TEAM-01**: Admin can invite staff users
+- [x] **TEAM-02**: Admin can invite client users linked to customer
+- [x] **TEAM-03**: Staff/Client receives email invite
+- [x] **TEAM-04**: Invited user completes signup via WorkOS
 - [ ] **TEAM-05**: Admin can view list of org members
 - [ ] **TEAM-06**: Admin can remove users from org
 
-### Staff Assignment (Partial)
+Note: TEAM-04 requires the WorkOS `invitation.accepted` webhook to be configured to attach users to orgs in Convex.
+
+### Staff Assignment (Complete)
 
 - [x] **ASSIGN-01**: Staff auto-assigned to customers they create
-- [ ] **ASSIGN-02**: Admin can assign staff to customers
-- [ ] **ASSIGN-03**: Admin can unassign staff from customers
-- [ ] **ASSIGN-04**: Staff assignment UI in customer detail
+- [x] **ASSIGN-02**: Admin can assign staff to customers
+- [x] **ASSIGN-03**: Admin can unassign staff from customers
+- [x] **ASSIGN-04**: Staff assignment UI in customer detail
 
-### Billing (Not Started)
+### Billing (In Progress — needs config & verification)
 
 - [ ] **BILL-01**: Org has subscription status synced from Lemon Squeezy
 - [ ] **BILL-02**: Admin can upgrade via Lemon Squeezy checkout
@@ -57,6 +59,22 @@
 - [ ] **BILL-04**: Plan caps update on subscription change
 - [ ] **BILL-05**: Usage cap enforced on staff/client creation
 - [ ] **BILL-06**: Billing page shows real usage from Convex
+
+Note: Billing backend/UI exist but require Lemon Squeezy webhook config and variant ID plan mapping to verify end-to-end.
+
+### Release Readiness (v1 Ship Blockers)
+
+- [ ] Fix Lemon Squeezy plan mapping to use real variant IDs in `convex/lemonsqueezy/plans.ts`
+- [ ] Enforce admin role on org settings updates (`convex/workos/updateOrg.ts`)
+- [ ] Add role-based access checks to staff assignment queries (prevent staff/client from listing arbitrary assignments)
+- [ ] Handle customer deletion with client users/invites (block or cascade cleanup)
+- [ ] Enforce org onboarding redirect in `src/routes/_authenticated.tsx`
+- [ ] Clarify restore-user behavior (reinvite vs restore), adjust UI accordingly
+- [ ] Configure WorkOS webhook endpoint and `WORKOS_WEBHOOK_SECRET`
+- [ ] Configure Lemon Squeezy webhook endpoint and environment variables
+- [ ] Add CapReachedBanner to invite flow
+- [ ] Update docs to reflect billing is implemented and required Convex env vars
+- [ ] Run v1 smoke test checklist and update requirement statuses
 
 ## v2 Requirements
 
@@ -107,16 +125,16 @@
 | SCOPE-02 | - | Complete |
 | SCOPE-03 | - | Complete |
 | SCOPE-04 | - | Complete |
-| TEAM-01 | 2 | Pending |
-| TEAM-02 | 2 | Pending |
-| TEAM-03 | 2 | Pending |
-| TEAM-04 | 2 | Pending |
+| TEAM-01 | 2 | Complete |
+| TEAM-02 | 2 | Complete |
+| TEAM-03 | 2 | Complete |
+| TEAM-04 | 2 | Complete |
 | TEAM-05 | 2 | Pending |
 | TEAM-06 | 2 | Pending |
 | ASSIGN-01 | - | Complete |
-| ASSIGN-02 | 2 | Pending |
-| ASSIGN-03 | 2 | Pending |
-| ASSIGN-04 | 2 | Pending |
+| ASSIGN-02 | 2 | Complete |
+| ASSIGN-03 | 2 | Complete |
+| ASSIGN-04 | 2 | Complete |
 | BILL-01 | 3 | Pending |
 | BILL-02 | 3 | Pending |
 | BILL-03 | 3 | Pending |
@@ -125,10 +143,10 @@
 | BILL-06 | 3 | Pending |
 
 **Coverage:**
-- v1 requirements: 25 total
-- Complete: 16 (64%)
-- Pending: 9 (36%)
+- v1 requirements: 32 total
+- Complete: 24 (75%)
+- Pending: 8 (25%)
 
 ---
 *Requirements defined: 2025-02-04*
-*Last updated: 2025-02-04 after codebase review*
+*Last updated: 2026-02-10 after ship-readiness review*

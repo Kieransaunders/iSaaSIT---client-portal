@@ -39,6 +39,7 @@ Edit `.env.local` with your credentials:
 # WorkOS AuthKit Configuration
 WORKOS_CLIENT_ID=client_xxx
 WORKOS_API_KEY=sk_test_xxx
+WORKOS_WEBHOOK_SECRET=wh_secret_xxx
 WORKOS_COOKIE_PASSWORD=your-secret-password-min-32-chars
 WORKOS_REDIRECT_URI=http://localhost:3000/callback
 
@@ -60,6 +61,20 @@ VITE_CONVEX_URL=https://xxx.convex.cloud
 2. Install the Convex CLI: `npm install -g convex`
 3. Run `npx convex dev` to initialize your project
 4. The CLI will provide your deployment URL
+
+### Set Convex Environment Variables (Required)
+
+Convex functions and WorkOS webhooks use secrets stored in the Convex environment:
+
+```bash
+# Development
+npx convex env set WORKOS_API_KEY sk_test_xxx
+npx convex env set WORKOS_WEBHOOK_SECRET wh_secret_xxx
+
+# Production
+npx convex env set WORKOS_API_KEY sk_live_xxx --prod
+npx convex env set WORKOS_WEBHOOK_SECRET wh_secret_xxx --prod
+```
 
 ## 4. Start the Development Server
 

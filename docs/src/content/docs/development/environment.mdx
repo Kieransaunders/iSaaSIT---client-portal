@@ -19,12 +19,27 @@ cp .env.local.example .env.local
 # Get from WorkOS Dashboard → Configuration → API Keys
 WORKOS_CLIENT_ID=client_xxx
 WORKOS_API_KEY=sk_test_xxx
+WORKOS_WEBHOOK_SECRET=wh_secret_xxx
 
 # Generate a random 32+ character string
 WORKOS_COOKIE_PASSWORD=your-super-secret-password-min-32-characters
 
 # Must match your WorkOS Redirect URI setting
 WORKOS_REDIRECT_URI=http://localhost:3000/callback
+```
+
+### Convex Environment (Required)
+
+Convex functions and webhooks read secrets from the Convex environment. Set these in your Convex deployment:
+
+```bash
+# Development
+npx convex env set WORKOS_API_KEY sk_test_xxx
+npx convex env set WORKOS_WEBHOOK_SECRET wh_secret_xxx
+
+# Production
+npx convex env set WORKOS_API_KEY sk_live_xxx --prod
+npx convex env set WORKOS_WEBHOOK_SECRET wh_secret_xxx --prod
 ```
 
 ### Convex Configuration
@@ -82,6 +97,7 @@ For production deployment, set these in your hosting platform:
 # WorkOS (use production keys)
 WORKOS_CLIENT_ID=client_xxx
 WORKOS_API_KEY=sk_live_xxx
+WORKOS_WEBHOOK_SECRET=wh_secret_xxx
 WORKOS_COOKIE_PASSWORD=your-production-secret
 WORKOS_REDIRECT_URI=https://yourdomain.com/callback
 

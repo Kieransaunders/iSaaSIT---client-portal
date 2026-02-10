@@ -1,216 +1,631 @@
-# Codebase Concerns
+# Codebase Concerns & Technical Debt
 
-**Analysis Date:** 2026-02-09
-
-## Tech Debt
-
-**Hardcoded `as any` Type Assertions:**
-- Issue: Multiple files use `as any` to bypass TypeScript type checking instead of properly typing values
-- Files: `src/router.tsx` (line 11), `src/routes/_authenticated/customers.tsx` (lines 23, 51), `src/routes/_authenticated/customers/.tsx` (lines 23, 51), `convex/orgs/update.ts` (line 265), `convex/workos/updateOrg.ts`
-- Impact: Reduces type safety and IDE help; makes refactoring risky; hides potential bugs
-- Fix approach: Properly type environment variables with Vite's typed env support, properly type Convex mutation arguments instead of casting to `any`
-
-**Placeholder `numbers` Table in Schema:**
-- Issue: The `numbers` table in `convex/schema.ts` (lines 89-91) is noted as temporary ("Keep numbers table from template until fully migrated")
-- Files: `convex/schema.ts`, likely used in `convex/myFunctions.ts`
-- Impact: Dead code increases maintenance burden; suggests incomplete migration from template
-- Fix approach: Remove the table and any template code once fully migrated to production schema
-
-**Duplicate Auth Checks:**
-- Issue: Every function in `convex/customers/crud.ts` repeats the same auth check pattern (lines 12-23, 74-85, 137-148, etc.)
-- Files: `convex/customers/crud.ts`, `convex/orgs/create.ts`
-- Impact: Code duplication makes auth logic harder to maintain; changes to auth validation must be made in multiple places
-- Fix approach: Extract auth pattern to shared helper function like `requireAuth(ctx)` or `getCurrentUser(ctx)` (pattern already suggested in SECURITY.md but not implemented)
-
-**Duplicate Org Limit Defaults:**
-- Issue: Free tier limits (3 customers, 2 staff, 10 clients) are hardcoded in multiple places
-- Files: `convex/orgs/create.ts` (lines 39-41 and 95-97), `convex/orgs/get.ts` likely has similar
-- Impact: If plan structure changes, must update in multiple places; risk of inconsistency
-- Fix approach: Define plan constants in a shared config file
-
-## Known Bugs
-
-**Hardcoded Usage Stats in Billing Page:**
-- Symptoms: The billing page shows static placeholder values (0 customers, 1 team member, 0 external users) regardless of actual org data
-- Files: `src/routes/_authenticated/billing.tsx` (lines 40-54)
-- Trigger: Navigate to `/billing` tab in authenticated app
-- Workaround: Manually fetch org data using `useQuery(api.orgs.get.getOrg)` instead of hardcoded values
-- Impact: Users cannot see actual plan usage; misleads on upgrade decisions
-
-**Missing Duplicate Org ID Check in Onboarding:**
-- Symptoms: If onboarding form submitted twice quickly, could create duplicate orgs
-- Files: `convex/workos/createOrg.ts` (lines 32-38), `convex/orgs/create.ts` (lines 22-29 has check, but action doesn't)
-- Trigger: Rapid form submissions on onboarding page
-- Workaround: None; second submission will error
-- Impact: Stale org records; orphaned WorkOS organizations
-
-**`as any` Cast in Customer Detail Page:**
-- Symptoms: Type system cannot validate customerId matches route parameter shape
-- Files: `src/routes/_authenticated/customers/.tsx` (line 23)
-- Trigger: Any route ID type change would not be caught by TypeScript
-- Impact: Silent failures if route param types change
-
-## Security Considerations
-
-**Environment Variable Exposure in Router:**
-- Risk: `import.meta.env.VITE_CONVEX_URL` accessed with `as any` cast, bypassing type safety
-- Files: `src/router.tsx` (line 11)
-- Current mitigation: Vite only exposes vars prefixed with `VITE_` to client
-- Recommendations: Use Vite's `type ImportMetaEnv` interface or create typed env config module to eliminate `as any`
-
-**No Input Sanitization Before Storage:**
-- Risk: Customer names and notes are stored directly without sanitization
-- Files: `convex/customers/crud.ts` (lines 183-189, 269-271), `src/routes/_authenticated/customers.tsx` (line 65-68)
-- Current mitigation: None; relies on Convex value validation only (basic string type check)
-- Recommendations: Add sanitization function for user input (pattern shown in SECURITY.md but not used in codebase)
-
-**Weak Email Validation:**
-- Risk: Email validation in onboarding only checks for `@` symbol
-- Files: `src/routes/onboarding.tsx` (line 46)
-- Current mitigation: Minimal check; WorkOS may validate further
-- Recommendations: Use proper email regex or validation library
-
-**Staff-Customer Assignment Orphans on Delete:**
-- Risk: When staff user is deleted, their customer assignments are not cleaned up (reverse cascade missing)
-- Files: `convex/customers/crud.ts` has cleanup on customer delete (lines 325-332), but no equivalent in users delete
-- Current mitigation: None; assignments become stale
-- Recommendations: Add cleanup in user deletion function
-
-**No Validation of Role Enum Values:**
-- Risk: If WorkOS returns unexpected role value, it's stored as-is in users table
-- Files: `convex/orgs/create.ts` (lines 114, 124), `convex/workos/storeOrg.ts` likely stores role
-- Current mitigation: Schema defines role union, but upstream from WorkOS is not validated
-- Recommendations: Validate WorkOS role against allowed set before storing
-
-## Performance Bottlenecks
-
-**Customer List Query for Staff Users:**
-- Problem: Staff fetching visible customers requires sequential Promise.all on customer IDs
-- Files: `convex/customers/crud.ts` (lines 48-50)
-- Cause: Must fetch individual customer docs after getting assignments
-- Improvement path: Add indexed query on customers by `(orgId, _id)` to batch-fetch, or add denormalized `customerIds` array to staff assignments
-
-**No Pagination on Customer List:**
-- Problem: All customers loaded into memory even if org has hundreds
-- Files: `convex/customers/crud.ts` (line 38), `src/routes/_authenticated/customers.tsx` (line 51)
-- Cause: `collect()` fetches all results; no cursor or limit
-- Improvement path: Implement cursor-based pagination with `Query.paginate()` in Convex; limit to 50 per page client-side
-
-**Synchronous Query for Org Limits on Every Customer Create:**
-- Problem: Must fetch org for maxCustomers check, then fetch all existing customers to count
-- Files: `convex/customers/crud.ts` (lines 163-172)
-- Cause: No pre-computed count in org record; must enumerate all
-- Improvement path: Add `customerCount` field to orgs table, updated via indexed trigger query
-
-## Fragile Areas
-
-**Onboarding Flow - No Idempotency:**
-- Files: `convex/workos/createOrg.ts`, `convex/orgs/create.ts`, `src/routes/onboarding.tsx`
-- Why fragile: Multi-step org creation (WorkOS → Convex → User → redirect) has no rollback; network failure mid-flow leaves orphaned data. Re-submission creates duplicates. No dedup key.
-- Safe modification: Wrap createOrganization action in transaction-like pattern; use WorkOS org ID as dedup key; add idempotency check before each step
-- Test coverage: No tests; critical path untested
-
-**Auth Initialization in Router:**
-- Files: `src/router.tsx` (lines 50-73)
-- Why fragile: `useAuthFromWorkOS` hook uses optional chaining on `useAuth()` result; if AuthKitProvider not mounted first, fails silently. If accessToken updates don't propagate, auth state stale.
-- Safe modification: Add null checks and error boundaries; test with AuthKit provider missing; validate token refresh timing
-- Test coverage: No tests for auth flow edge cases
-
-**Role-Based Access Control Across 5 Files:**
-- Files: `convex/customers/crud.ts`, `convex/orgs/update.ts`, `convex/workos/storeOrg.ts`, etc.
-- Why fragile: RBAC logic inlined in every handler; if role values change (e.g., "admin" → "administrator"), must update in multiple places. Hard to audit all access checks.
-- Safe modification: Extract RBAC to centralized policy engine; add integration tests that verify each role can only access allowed resources
-- Test coverage: No tests for RBAC; cannot verify "staff cannot delete customers" is enforced everywhere
-
-**Customer Deletion Cascades:**
-- Files: `convex/customers/crud.ts` (lines 321-335)
-- Why fragile: Manually cascades to staffCustomerAssignments. If new tables added that reference customers, must remember to add cleanup.
-- Safe modification: Use Convex automatic deletion cascades when possible; document all foreign keys explicitly; add migration for existing orphans
-- Test coverage: No tests for cascade behavior
-
-## Scaling Limits
-
-**Organization Limits Hardcoded:**
-- Current capacity: Free tier (3 customers, 2 staff, 10 clients); not enforced beyond plan
-- Limit: If Convex billing integration added, no way to scale limits dynamically; must redeploy to change
-- Scaling path: Store limits in a `plans` table, reference by `planId` in org; allow runtime updates without redeployment
-
-**No Pagination Architecture:**
-- Current capacity: UI loads all customers at once; functional up to ~100-200 records
-- Limit: With 1000+ customers, browser memory and query time explode; Convex function timeout (300s) may hit
-- Scaling path: Implement cursor-based pagination throughout; add server-side filtering/search; denormalize frequently-accessed data
-
-**Single Convex Deployment:**
-- Current capacity: Convex free tier (1M function calls/month, 5GB storage)
-- Limit: At scale (1000+ orgs, 10k+ customers), will quickly exceed quotas
-- Scaling path: Plan Convex paid tier; implement request batching; cache frequently accessed data; consider eventual consistency patterns
-
-## Dependencies at Risk
-
-**WorkOS AuthKit Version Lock:**
-- Risk: `@workos/authkit-tanstack-react-start` version pinned to exact `0.5.0` (package.json line 44)
-- Impact: Cannot receive security patches for minor versions; if WorkOS releases 0.5.1 bug fix, not applied
-- Migration plan: Switch to `^0.5.0` or `~0.5.0` semver; test on each minor update before release
-
-**Convex React Query Integration Immature:**
-- Risk: `@convex-dev/react-query` is `^0.1.0` (early stage); API may change without major version bump
-- Impact: Breaking changes possible in minor updates; integration may diverge from Convex or React Query conventions
-- Migration plan: Monitor GitHub releases; stay on supported versions; consider direct Convex hooks if integration breaks
-
-**Radix UI v1 / Shadcn UI Lag:**
-- Risk: `radix-ui` pinned to `1.4.3` (package.json line 50); Radix v2 already released
-- Impact: Missing accessibility fixes, performance improvements; newer integrations may not support v1
-- Migration plan: Plan gradual migration to Radix v2; use separate branch; test all components
-
-## Missing Critical Features
-
-**Billing Integration Incomplete:**
-- Problem: Billing page is UI shell; no Lemon Squeezy integration, no plan enforcement, no usage tracking
-- Blocks: Cannot charge customers; cannot enforce plan limits in production; cannot support tiered features
-- Impact: MVP cannot monetize; workarounds with static plan caps confuse users
-
-**No Error Logging / Monitoring:**
-- Problem: Errors throw silently or to console; no centralized error tracking
-- Blocks: Cannot diagnose production issues; cannot alert on errors; cannot measure reliability
-- Impact: Silent failures in production; no observability of customer impact
-
-**No Audit Trail:**
-- Problem: No logging of who deleted/modified what customer or org data
-- Blocks: Cannot debug data corruption; cannot provide compliance reports; cannot investigate security incidents
-- Impact: Regulatory/GDPR compliance gap; cannot audit org admin actions
-
-## Test Coverage Gaps
-
-**Authentication Flow:**
-- What's not tested: Onboarding success/failure paths, token refresh, WorkOS integration points
-- Files: `src/routes/onboarding.tsx`, `convex/workos/createOrg.ts`, `src/router.tsx`
-- Risk: Silent auth failures; user onboarding breaks without alerting
-- Priority: High - blocks user acquisition
-
-**Authorization (RBAC):**
-- What's not tested: Staff cannot modify customers, clients cannot delete, admin enforcement
-- Files: `convex/customers/crud.ts`, entire RBAC surface
-- Risk: Privilege escalation vulnerability; users access data they shouldn't
-- Priority: High - security critical
-
-**Data Isolation (Multi-Tenancy):**
-- What's not tested: Org A cannot see Org B data, cross-org access attempts
-- Files: `convex/customers/crud.ts`, all queries
-- Risk: Data leak between organizations
-- Priority: High - security critical
-
-**Plan Limit Enforcement:**
-- What's not tested: Creating 4th customer when limit is 3, staff exceeding team limit
-- Files: `convex/customers/crud.ts` (lines 175-179)
-- Risk: Limit enforcement bypassed in edge cases; unlimited usage if bypass found
-- Priority: Medium - revenue impact
-
-**Error Scenarios:**
-- What's not tested: Network failures, Convex unavailable, WorkOS API down, malformed inputs
-- Files: Entire codebase
-- Risk: Cascading failures; unclear error messages; poor UX during incidents
-- Priority: Medium - operational stability
+> **Document Purpose:** Track technical debt, known issues, security concerns, and areas needing attention.
+> 
+> **Last Updated:** 2026-02-10
 
 ---
 
-*Concerns audit: 2026-02-09*
+## Table of Contents
+
+- [Critical Issues](#critical-issues)
+- [TODO/FIXME Comments Found](#todofixme-comments-found)
+- [Type Safety Issues](#type-safety-issues)
+- [Security Concerns](#security-concerns)
+- [Error Handling Issues](#error-handling-issues)
+- [Incomplete Features](#incomplete-features)
+- [Performance Concerns](#performance-concerns)
+- [Architecture Smells](#architecture-smells)
+- [Dependency Concerns](#dependency-concerns)
+
+---
+
+## Critical Issues
+
+### 1. Billing Integration Incomplete (BLOCKING)
+
+**Location:** `src/routes/_authenticated/billing.tsx`, `convex/lemonsqueezy/plans.ts`
+
+**Issue:** Lemon Squeezy billing is not fully configured with actual product variant IDs.
+
+```typescript
+// src/routes/_authenticated/billing.tsx:62
+variantId: 'VARIANT_PRO', // TODO: Replace with actual variant ID
+
+// src/routes/_authenticated/billing.tsx:76
+variantId: 'VARIANT_BUSINESS', // TODO: Replace with actual variant ID
+
+// convex/lemonsqueezy/plans.ts:21
+// TODO: Update variant IDs after creating products in Lemon Squeezy dashboard
+```
+
+**Impact:** Users cannot actually upgrade to paid plans. The checkout flow will fail.
+
+**Required Action:**
+1. Create products/variants in Lemon Squeezy dashboard
+2. Replace `VARIANT_PRO` and `VARIANT_BUSINESS` with actual variant IDs
+3. Configure `VITE_LEMONSQUEEZY_STORE_SLUG` environment variable
+
+---
+
+### 2. Webhook Secret Configuration Missing
+
+**Location:** `convex/webhooks/workos.ts:71`, `convex/lemonsqueezy/webhook.ts:37`
+
+**Issue:** Webhook handlers check for secrets at runtime but don't fail gracefully during development.
+
+```typescript
+// convex/webhooks/workos.ts:71-75
+const webhookSecret = process.env.WORKOS_WEBHOOK_SECRET;
+if (!webhookSecret) {
+  console.error("WORKOS_WEBHOOK_SECRET not configured");
+  return new Response("Webhook secret not configured", { status: 500 });
+}
+```
+
+**Impact:** Webhook endpoints return 500 errors instead of being disabled when not configured.
+
+---
+
+## TODO/FIXME Comments Found
+
+| Location | Line | Comment |
+|----------|------|---------|
+| `convex/lemonsqueezy/plans.ts` | 21 | `TODO: Update variant IDs after creating products in Lemon Squeezy dashboard` |
+| `src/routes/_authenticated/billing.tsx` | 62 | `TODO: Replace with actual variant ID` |
+| `src/routes/_authenticated/billing.tsx` | 76 | `TODO: Replace with actual variant ID` |
+
+---
+
+## Type Safety Issues
+
+### 1. Widespread `as any` Usage
+
+**Locations:** Multiple files
+
+**Pattern:** Type assertions bypassing TypeScript's type checking:
+
+```typescript
+// src/routes/_authenticated/customers.tsx:76
+await deleteCustomer({ customerId: customerToDelete as any });
+
+// src/routes/_authenticated/customers/$customerId.tsx:24
+const customer = useQuery(api.customers.crud.getCustomer, { customerId: customerId as any });
+
+// src/routes/_authenticated/customers/$customerId.tsx:32-33
+const assignedStaff = useQuery(api.assignments.queries.listAssignedStaff, { customerId: customerId as any });
+const availableStaff = useQuery(api.assignments.queries.listAvailableStaff, { customerId: customerId as any });
+
+// src/routes/_authenticated/customers/$customerId.tsx:62
+customerId: customerId as any,
+
+// src/routes/_authenticated/customers/$customerId.tsx:76-77
+customerId: customerId as any,
+userId: staffUserId as any,
+
+// src/routes/_authenticated/customers/$customerId.tsx:87-88
+customerId: customerId as any,
+userId: staffUserId as any,
+
+// src/router.tsx:9
+const CONVEX_URL = (import.meta as any).env.VITE_CONVEX_URL!;
+
+// convex/lemonsqueezy/sync.ts:39
+org = await ctx.db.get(args.orgConvexId as any);
+
+// convex/workos/updateOrg.ts:33
+const updateData: any = { ... };
+
+// convex/orgs/update.ts:12
+const updates: Record<string, any> = { ... };
+```
+
+**Impact:**
+- Loss of type safety for critical ID parameters
+- Potential runtime errors from mismatched types
+- Difficult refactoring (TypeScript won't catch breaking changes)
+
+**Root Cause:** Route params from TanStack Router are typed as `string`, but Convex expects `Id<"table">` types.
+
+**Recommended Fix:** Create a type-safe wrapper for route params or use proper type guards.
+
+---
+
+### 2. Route Tree Generated Code Using `as any`
+
+**Location:** `src/routeTree.gen.ts:28-79`
+
+```typescript
+} as any)
+} as any)
+// ... multiple instances
+```
+
+**Note:** This is auto-generated code, but the pattern suggests potential type issues in the route configuration.
+
+---
+
+## Security Concerns
+
+### 1. No Rate Limiting on Public Endpoints
+
+**Location:** `convex/webhooks/workos.ts`, `convex/lemonsqueezy/webhook.ts`
+
+**Issue:** Webhook endpoints have no rate limiting, making them vulnerable to:
+- DDoS attacks
+- Webhook flooding
+- Resource exhaustion
+
+**Current Code:**
+```typescript
+// convex/webhooks/workos.ts:58
+export const handleWorkOSWebhook = httpAction(async (ctx, request) => {
+  // No rate limiting
+  // ...
+});
+```
+
+**Recommendation:** Implement rate limiting using Convex's built-in mechanisms or a token bucket approach.
+
+---
+
+### 2. Timing Attack Vulnerability in Webhook Verification
+
+**Location:** `convex/webhooks/workos.ts:47`
+
+**Issue:** Signature comparison is not constant-time:
+
+```typescript
+// convex/webhooks/workos.ts:46-47
+// Compare signatures (constant-time comparison would be better, but this is acceptable)
+return computedSig === expectedSig;
+```
+
+**Impact:** Potential timing attack vulnerability allowing attackers to forge webhook signatures.
+
+**Note:** The comment acknowledges this is a known issue marked as "acceptable" for the current implementation.
+
+---
+
+### 3. Environment Variable Validation Missing
+
+**Location:** `src/router.tsx:8-12`, `convex/auth.config.ts:3`
+
+**Issue:** Runtime validation of critical environment variables is minimal:
+
+```typescript
+// src/router.tsx:8-12
+const CONVEX_URL = (import.meta as any).env.VITE_CONVEX_URL!;
+if (!CONVEX_URL) {
+  throw new Error('missing VITE_CONVEX_URL env var');
+}
+
+// convex/auth.config.ts:3
+const clientId = process.env.WORKOS_CLIENT_ID;
+// No validation - used directly in JWKS URL construction
+```
+
+**Impact:**
+- Cryptic errors at runtime
+- Potential security issues if malformed values are used
+
+---
+
+### 4. CORS Policy Not Explicitly Configured
+
+**Issue:** No explicit CORS configuration found for webhook endpoints. Convex defaults may be insufficient.
+
+---
+
+## Error Handling Issues
+
+### 1. Console Error Logging Instead of User Feedback
+
+**Locations:** Multiple files
+
+**Pattern:** Errors are logged to console but not shown to users:
+
+```typescript
+// src/routes/_authenticated/billing.tsx:99-100
+try {
+  await cancelSubscription({});
+  // ...
+} catch (error) {
+  console.error('Failed to cancel subscription:', error);
+}
+
+// src/routes/_authenticated/team.tsx:42-43
+try {
+  await removeUser({ userId });
+} catch (error) {
+  console.error('Failed to remove user:', error);
+}
+
+// src/routes/_authenticated/customers/$customerId.tsx:79-80
+try {
+  await assignStaffMutation({ ... });
+} catch (error) {
+  console.error('Failed to assign staff:', error);
+}
+```
+
+**Impact:** Users see no feedback when operations fail, leading to:
+- Confusion about whether actions succeeded
+- Repeated failed attempts
+- Poor UX
+
+---
+
+### 2. Generic Error Component Exposes Stack Traces
+
+**Location:** `src/router.tsx:32`
+
+```typescript
+defaultErrorComponent: (err) => <p>{err.error.stack}</p>,
+```
+
+**Issue:** Stack traces are exposed to end users in production.
+
+**Security Impact:** Information disclosure - stack traces can reveal:
+- File paths
+- Code structure
+- Internal implementation details
+
+---
+
+### 3. Error Handling in Mutation Hooks Inconsistent
+
+**Issue:** Some mutations have error handling, others don't:
+
+```typescript
+// src/routes/_authenticated/customers.tsx:304-311
+} catch (error) {
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  if (errorMessage.includes('limit reached') || errorMessage.includes('Customer limit')) {
+    setLimitError(true);
+  } else {
+    throw error;  // Re-throws some errors
+  }
+}
+```
+
+**Impact:** Inconsistent error handling patterns across the codebase.
+
+---
+
+## Incomplete Features
+
+### 1. Toast/Notification System Missing
+
+**Issue:** Multiple TODO comments indicate a toast system is planned but not implemented:
+
+```typescript
+// src/routes/_authenticated/billing.tsx:97-98
+// Show success feedback (console for now, toast in future)
+console.log('Subscription cancelled successfully');
+```
+
+**Impact:** No user feedback for async operations.
+
+---
+
+### 2. Numbers Table from Template Still Exists
+
+**Location:** `convex/schema.ts:118-121`
+
+```typescript
+// Temporary: Keep numbers table from template until fully migrated
+numbers: defineTable({
+  value: v.number(),
+}),
+```
+
+**Impact:** Unused table cluttering the schema.
+
+---
+
+### 3. Free Tier Hardcoded in Multiple Places
+
+**Locations:** `convex/lemonsqueezy/plans.ts`, `src/routes/_authenticated/billing.tsx`
+
+**Issue:** Free tier limits are defined in both backend and frontend:
+
+```typescript
+// convex/lemonsqueezy/plans.ts:12-16
+export const FREE_TIER_LIMITS = {
+  maxCustomers: 3,
+  maxStaff: 2,
+  maxClients: 10,
+} as const;
+
+// src/routes/_authenticated/billing.tsx:37-48
+Free: {
+  name: 'Free',
+  // ... duplicating the same limits
+  limits: { maxCustomers: 3, maxStaff: 2, maxClients: 10 },
+},
+```
+
+**Impact:** Risk of synchronization issues between frontend and backend limits.
+
+---
+
+## Performance Concerns
+
+### 1. No Query Caching Strategy
+
+**Location:** `src/router.tsx:16-24`
+
+```typescript
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      queryKeyHashFn: convexQueryClient.hashFn(),
+      queryFn: convexQueryClient.queryFn(),
+      gcTime: 5000,  // Very short cache time
+    },
+  },
+});
+```
+
+**Issue:** `gcTime: 5000` (5 seconds) is extremely short, potentially causing:
+- Excessive re-fetching
+- Unnecessary network traffic
+- Poor perceived performance
+
+---
+
+### 2. Multiple Parallel Queries Without Batching
+
+**Locations:** Various route components
+
+**Pattern:** Components fetch multiple queries in parallel:
+
+```typescript
+// src/routes/_authenticated/billing.tsx:81-83
+const usageStats = useQuery(api.billing.queries.getUsageStats);
+const billingInfo = useQuery(api.billing.queries.getBillingInfo);
+const org = useQuery(api.orgs.get.getMyOrg);
+```
+
+**Impact:** Multiple round trips to the server instead of batched requests.
+
+---
+
+### 3. No Pagination on List Queries
+
+**Locations:** `convex/customers/crud.ts`, `convex/users/queries.ts`
+
+**Issue:** List queries return all records:
+
+```typescript
+// convex/customers/crud.ts:55-60
+const customers = await ctx.db
+  .query("customers")
+  .withIndex("by_org", (q) => q.eq("orgId", user.orgId))
+  .collect();  // Returns ALL customers
+```
+
+**Impact:** Performance degradation as data grows. No upper bound on result set size.
+
+---
+
+## Architecture Smells
+
+### 1. Role Checking Duplicated Across Functions
+
+**Pattern:** Every Convex function repeats the same auth checks:
+
+```typescript
+// Pattern repeated in ~20+ files:
+const user = await ctx.db
+  .query("users")
+  .withIndex("by_workos_user_id", (q) => q.eq("workosUserId", identity.subject))
+  .unique();
+
+if (!user) {
+  throw new ConvexError("User record not found");
+}
+
+if (user.role !== "admin") {
+  throw new ConvexError("Admin role required");
+}
+```
+
+**Impact:**
+- Code duplication
+- Inconsistent error messages
+- Hard to maintain (change auth logic in 20+ places)
+
+**Recommendation:** Create a centralized auth helper (as documented in SECURITY.md but not implemented).
+
+---
+
+### 2. Client-Side Role Checks
+
+**Location:** `src/routes/_authenticated/customers/$customerId.tsx:28-29`
+
+```typescript
+const userInfo = useQuery(api.orgs.get.hasOrg);
+const isAdmin = userInfo?.role === 'admin';
+```
+
+**Issue:** Role checks are performed on the client side to conditionally render UI.
+
+**Security Note:** This is acceptable only if the server validates permissions on every mutation/query (which it does), but it's brittle.
+
+---
+
+### 3. Magic Strings for Error Messages
+
+**Issue:** Error messages are hardcoded as strings throughout the codebase:
+
+```typescript
+throw new ConvexError("Not authenticated");
+throw new ConvexError("Admin role required to send invitations");
+throw new ConvexError("User not in organization");
+```
+
+**Impact:**
+- Difficult to change or internationalize
+- Prone to typos/inconsistencies
+- Hard to programmatically handle specific errors
+
+---
+
+## Dependency Concerns
+
+### 1. React 19 (Very New)
+
+**Location:** `package.json:52-53`
+
+```json
+"react": "^19.2.4",
+"react-dom": "^19.2.4",
+```
+
+**Issue:** React 19 was released recently (late 2024/early 2025). Some ecosystem packages may not be fully compatible.
+
+**Risk:** Potential undiscovered bugs or compatibility issues with third-party libraries.
+
+---
+
+### 2. TanStack Router/Start (Rapidly Evolving)
+
+**Location:** `package.json:41-43`
+
+```json
+"@tanstack/react-router": "^1.158.0",
+"@tanstack/react-router-ssr-query": "^1.158.0",
+"@tanstack/react-start": "^1.158.0",
+```
+
+**Issue:** TanStack Start is pre-1.0 stable and undergoing rapid development.
+
+**Risk:** API changes, breaking changes in minor versions.
+
+---
+
+### 3. Tailwind CSS v4 (Beta/RC)
+
+**Location:** `package.json:69`
+
+```json
+"tailwindcss": "^4.1.18",
+```
+
+**Issue:** Tailwind v4 was in beta/RC when this project was created.
+
+**Risk:** Potential breaking changes or undocumented behavior.
+
+---
+
+### 4. radix-ui Monolith Package
+
+**Location:** `package.json:51`
+
+```json
+"radix-ui": "^1.4.3",
+```
+
+**Issue:** The entire `radix-ui` package is imported instead of individual primitives like `@radix-ui/react-dialog`.
+
+**Impact:** Potentially larger bundle size than necessary.
+
+---
+
+## Testing Debt
+
+### 1. No Test Suite Implemented
+
+**Evidence:** `TESTING.md` exists but contains only guidelines:
+
+> **Note:** No test suite is currently implemented. Tests should be added as the project matures.
+
+**Impact:**
+- No regression protection
+- Manual testing required for all changes
+- Difficult to refactor safely
+
+---
+
+### 2. No E2E Tests for Critical Flows
+
+**Missing Coverage:**
+- User authentication flow
+- Organization creation
+- Customer CRUD operations
+- Team invitation flow
+- Billing/subscription flow
+
+---
+
+## Documentation Debt
+
+### 1. WorkOS Webhook Handler Limited
+
+**Location:** `convex/webhooks/workos.ts:56-57`
+
+```typescript
+/**
+ * Handle WorkOS webhook events
+ * Currently handles: invitation.accepted
+ */
+```
+
+**Issue:** Only handles `invitation.accepted` event. Other important events are ignored:
+- `user.created`
+- `user.updated`
+- `organization.updated`
+- `organization.deleted`
+
+---
+
+### 2. API Documentation Out of Sync
+
+**Risk:** As features are added quickly, API.md may not reflect actual implementation.
+
+---
+
+## Recommended Priority Order
+
+### 🔴 Critical (Fix Immediately)
+
+1. Replace placeholder variant IDs in billing configuration
+2. Add user-facing error feedback (not just console logging)
+3. Fix stack trace exposure in error component
+
+### 🟠 High (Fix Soon)
+
+4. Remove `as any` type assertions for ID parameters
+5. Add rate limiting to webhook endpoints
+6. Implement pagination for list queries
+7. Create centralized auth helper to reduce duplication
+
+### 🟡 Medium (Fix When Convenient)
+
+8. Remove unused `numbers` table
+9. Consolidate free tier limit definitions
+10. Add proper CORS configuration
+11. Implement toast/notification system
+
+### 🟢 Low (Nice to Have)
+
+12. Add constant-time signature comparison
+13. Split radix-ui into individual packages
+14. Add comprehensive test suite
+15. Improve error message system (constants vs magic strings)
+
+---
+
+## Summary Statistics
+
+| Category | Count |
+|----------|-------|
+| TODO/FIXME Comments | 3 |
+| `as any` Usages | 15+ |
+| `console.error` Without User Feedback | 8 |
+| Webhook Endpoints Without Rate Limiting | 2 |
+| Missing Environment Validations | 3 |
+| Incomplete Features | 3 |
+| Security Concerns | 4 |

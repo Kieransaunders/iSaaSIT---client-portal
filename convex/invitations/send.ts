@@ -54,6 +54,42 @@ export const sendInvitation = action({
       throw new ConvexError("Customer ID required for client invitations");
     }
 
+    const email = args.email.trim();
+
+    if (!email) {
+      throw new ConvexError("Email is required");
+    }
+
+    // Prevent sending to existing members
+    const isExistingMember = await ctx.runQuery(internal.invitations.internal.isOrgMemberByEmail, {
+      orgId: userRecord.orgId,
+      email,
+    });
+
+    if (isExistingMember) {
+      throw new ConvexError("User already a member of this organization");
+    }
+
+    // Prevent duplicate pending invitations
+    const existingInvitation = await ctx.runQuery(
+      internal.invitations.internal.getPendingInvitationByEmail,
+      {
+        orgId: userRecord.orgId,
+        email,
+      }
+    );
+
+    if (existingInvitation) {
+      const now = Date.now();
+      if (existingInvitation.expiresAt > now) {
+        throw new ConvexError("An invitation is already pending for this email");
+      }
+
+      await ctx.runMutation(internal.invitations.internal.deletePendingInvitation, {
+        invitationId: existingInvitation._id,
+      });
+    }
+
     // Check usage caps before sending
     const counts = await ctx.runQuery(internal.invitations.internal.getOrgUserCounts, {
       orgId: userRecord.orgId,
@@ -92,7 +128,7 @@ export const sendInvitation = action({
       // Send invitation via WorkOS
       const invitation = await workos.userManagement.sendInvitation({
         organizationId: org.workosOrgId,
-        email: args.email,
+        email,
         expiresInDays: 7,
         inviterUserId: workosUserId,
       });
@@ -103,7 +139,7 @@ export const sendInvitation = action({
 
       await ctx.runMutation(internal.invitations.internal.storePendingInvitation, {
         workosInvitationId: invitation.id,
-        email: args.email,
+        email,
         orgId: userRecord.orgId,
         role: args.role,
         customerId: args.customerId,
@@ -115,6 +151,10 @@ export const sendInvitation = action({
       return { invitationId: invitation.id };
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
+      if (message.toLowerCase().includes("already a member of organization")) {
+        throw new ConvexError("User already a member of this organization");
+      }
+
       throw new ConvexError(`Failed to send invitation: ${message}`);
     }
   },

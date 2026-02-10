@@ -1,13 +1,13 @@
 # Project State: iSaaSIT
 
-**Last updated:** 2026-02-09
+**Last updated:** 2026-02-10
 
 ## Project Reference
 
 See: .planning/PROJECT.md (updated 2025-02-04)
 
 **Core value:** Agencies can spin up client projects with data isolation, billing, and role-based access
-**Current focus:** Phase 2 In Progress — Team Management UI Complete
+**Current focus:** Phase 3 In Progress — Billing + v1 ship blockers
 
 ## Current Status
 
@@ -17,7 +17,7 @@ See: .planning/PROJECT.md (updated 2025-02-04)
 | 2 | In Progress | 4/5 plans |
 | 3 | In Progress | 2/5 plans |
 
-**Overall:** 20/25 requirements complete (80%)
+**Overall:** 24/32 requirements complete (75%)
 
 ## Phase Status
 
@@ -31,13 +31,13 @@ See: .planning/PROJECT.md (updated 2025-02-04)
 - **Status:** In progress (4 of 5 plans complete)
 - **Requirements:** TEAM-01 ✓, TEAM-02 ✓, TEAM-03 ✓, TEAM-04 ✓, TEAM-05, TEAM-06, ASSIGN-02 ✓, ASSIGN-03 ✓, ASSIGN-04 ✓
 - **Plans:** 02-01 ✓ (schema + invitation backend), 02-02 ✓ (staff assignment), 02-03 ✓ (webhook + user management), 02-04 ✓ (team UI)
-- **Blockers:** None
+- **Blockers:** WorkOS webhook must be configured for invitation.accepted to attach users to orgs in Convex
 
 ### Phase 3: Billing
-- **Status:** In progress (2 of 5 plans complete)
+- **Status:** In progress (2 of 6 plans complete)
 - **Requirements:** BILL-01 to BILL-06
 - **Plans:** 03-01 ✓ (webhook + sync), 03-02 ✓ (billing backend)
-- **Blockers:** None
+- **Blockers:** Plan limit mapping must use Lemon Squeezy variant IDs (PLAN_TIERS keys) or billing will default to free limits
 
 ## Recent Activity
 
@@ -77,14 +77,22 @@ See: .planning/PROJECT.md (updated 2025-02-04)
 | Resend = revoke + send (no native resend) | 02-01 | WorkOS SDK pattern | Standard for invitation lifecycle management |
 
 ### Pending Todos
-1. Replace agency copy with generic workspace terminology (area: ui)
-2. Configure WorkOS webhook endpoint for invitation.accepted events (area: workos-setup) - REQUIRED for invitation acceptance to work end-to-end
-3. Configure Lemon Squeezy webhook endpoint and environment variables (area: billing-setup) - REQUIRED for billing operations
-4. Update variant IDs in convex/lemonsqueezy/plans.ts with actual Lemon Squeezy variant IDs (area: billing-config)
+1. Update plan limit mapping in convex/lemonsqueezy/plans.ts to use actual Lemon Squeezy variant IDs (area: billing-config)
+2. Enforce admin role on org settings updates (workos.updateOrganization) (area: security)
+3. Add role-based access checks to staff assignment queries (prevent staff/client from listing arbitrary assignments) (area: security)
+4. Handle customer deletion with client users/invites (block or cascade cleanup) (area: data-integrity)
+5. Enforce org onboarding redirect in /_authenticated layout (area: auth-guard)
+6. Clarify/implement restore-user behavior (reinvite vs restore), adjust UI accordingly (area: ux)
+7. Configure WorkOS webhook endpoint for invitation.accepted events (area: workos-setup) - REQUIRED for invitation acceptance to work end-to-end
+8. Configure Lemon Squeezy webhook endpoint and environment variables (area: billing-setup) - REQUIRED for billing operations
+9. Add CapReachedBanner to invite flow (area: billing-ux)
+10. Update docs to reflect billing is implemented and required Convex env vars (area: docs)
+11. Replace agency copy with generic workspace terminology (area: ui)
+12. Run v1 smoke test checklist and update requirement statuses (area: verification)
 
 ## Next Action
 
-Continue Phase 3: Billing — Plan 03-03 (billing page UI implementation)
+Address ship blockers: fix Lemon Squeezy plan mapping, lock down org settings updates, and add role-based access checks for assignments.
 
 ---
 *State tracking initialized: 2025-02-04*

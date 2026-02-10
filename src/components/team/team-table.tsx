@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
-import { RotateCcw, Trash2, UserCircle } from 'lucide-react';
+import { RotateCcw, Trash2, UserCircle, UserCheck } from 'lucide-react';
+import { useMutation } from 'convex/react';
+import { api } from '../../../convex/_generated/api';
+import { toast } from 'sonner';
 import type { Id } from '../../../convex/_generated/dataModel';
 import {
   Table,
@@ -39,10 +42,13 @@ interface TeamTableProps {
   members: Array<TeamMember>;
   onRemove?: (userId: Id<'users'>) => void;
   onRestore?: (userId: Id<'users'>) => void;
+  isAdmin?: boolean;
+  currentUserId?: Id<'users'>;
 }
 
-export function TeamTable({ members, onRemove, onRestore }: TeamTableProps) {
+export function TeamTable({ members, onRemove, onRestore, isAdmin, currentUserId }: TeamTableProps) {
   const [userToRemove, setUserToRemove] = useState<TeamMember | null>(null);
+  const impersonate = useMutation(api.users.impersonate.startImpersonating);
 
   const handleRemoveClick = (member: TeamMember) => {
     setUserToRemove(member);
@@ -52,6 +58,17 @@ export function TeamTable({ members, onRemove, onRestore }: TeamTableProps) {
     if (userToRemove && onRemove) {
       onRemove(userToRemove._id);
       setUserToRemove(null);
+    }
+  };
+
+  const handleImpersonate = async (userId: Id<'users'>) => {
+    try {
+      await impersonate({ targetUserId: userId });
+      toast.success('Now impersonating user');
+      // Full page reload to reset all route and data states properly
+      window.location.reload();
+    } catch (error) {
+      toast.error('Failed to impersonate user');
     }
   };
 
@@ -102,26 +119,39 @@ export function TeamTable({ members, onRemove, onRestore }: TeamTableProps) {
                   {format(new Date(member.createdAt), 'MMM d, yyyy')}
                 </TableCell>
                 <TableCell className="text-right">
-                  {member.status === 'active' && onRemove ? (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemoveClick(member)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Remove
-                    </Button>
-                  ) : member.status === 'removed' && onRestore ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onRestore(member._id)}
-                    >
-                      <RotateCcw className="mr-2 h-4 w-4" />
-                      Restore
-                    </Button>
-                  ) : null}
+                  <div className="flex justify-end gap-2">
+                    {member.status === 'active' && isAdmin && member._id !== currentUserId && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleImpersonate(member._id)}
+                        title="Impersonate this user"
+                      >
+                        <UserCheck className="h-4 w-4" />
+                        <span className="sr-only md:not-sr-only md:ml-2">Act As</span>
+                      </Button>
+                    )}
+                    {member.status === 'active' && onRemove ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveClick(member)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only md:not-sr-only md:ml-2">Delete</span>
+                      </Button>
+                    ) : member.status === 'removed' && onRestore ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onRestore(member._id)}
+                      >
+                        <RotateCcw className="mr-2 h-4 w-4" />
+                        Restore
+                      </Button>
+                    ) : null}
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
@@ -133,9 +163,9 @@ export function TeamTable({ members, onRemove, onRestore }: TeamTableProps) {
       <AlertDialog open={!!userToRemove} onOpenChange={() => setUserToRemove(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Remove Team Member</AlertDialogTitle>
+            <AlertDialogTitle>Delete Team Member</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to remove {userToRemove?.displayName}? They will lose
+              Are you sure you want to delete {userToRemove?.displayName}? They will lose
               access to the organization.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -145,7 +175,7 @@ export function TeamTable({ members, onRemove, onRestore }: TeamTableProps) {
               onClick={handleConfirmRemove}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Remove
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -170,6 +200,19 @@ interface PendingTableProps {
 }
 
 export function PendingTable({ invitations, onResend, onRevoke }: PendingTableProps) {
+  const [invitationToDelete, setInvitationToDelete] = useState<PendingInvitation | null>(null);
+
+  const handleDeleteClick = (invitation: PendingInvitation) => {
+    setInvitationToDelete(invitation);
+  };
+
+  const handleConfirmDelete = () => {
+    if (invitationToDelete && onRevoke) {
+      onRevoke(invitationToDelete._id);
+      setInvitationToDelete(null);
+    }
+  };
+
   if (invitations.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground border rounded-lg">
@@ -183,61 +226,87 @@ export function PendingTable({ invitations, onResend, onRevoke }: PendingTablePr
   }
 
   return (
-    <div className="border rounded-lg">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Email</TableHead>
-            <TableHead>Role</TableHead>
-            <TableHead>Customer</TableHead>
-            <TableHead>Sent</TableHead>
-            <TableHead>Expires</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {invitations.map((invitation) => (
-            <TableRow key={invitation._id}>
-              <TableCell className="font-medium">{invitation.email}</TableCell>
-              <TableCell>
-                {invitation.role.charAt(0).toUpperCase() + invitation.role.slice(1)}
-              </TableCell>
-              <TableCell>
-                {invitation.customerName || '-'}
-              </TableCell>
-              <TableCell>
-                {format(new Date(invitation.createdAt), 'MMM d, yyyy')}
-              </TableCell>
-              <TableCell>
-                {format(new Date(invitation.expiresAt), 'MMM d, yyyy')}
-              </TableCell>
-              <TableCell className="text-right">
-                <div className="flex justify-end gap-2">
-                  {onResend && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onResend(invitation._id)}
-                    >
-                      Resend
-                    </Button>
-                  )}
-                  {onRevoke && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onRevoke(invitation._id)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      Revoke
-                    </Button>
-                  )}
-                </div>
-              </TableCell>
+    <>
+      <div className="border rounded-lg">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Email</TableHead>
+              <TableHead>Role</TableHead>
+              <TableHead>Customer</TableHead>
+              <TableHead>Sent</TableHead>
+              <TableHead>Expires</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+          </TableHeader>
+          <TableBody>
+            {invitations.map((invitation) => (
+              <TableRow key={invitation._id}>
+                <TableCell className="font-medium">{invitation.email}</TableCell>
+                <TableCell>
+                  {invitation.role.charAt(0).toUpperCase() + invitation.role.slice(1)}
+                </TableCell>
+                <TableCell>
+                  {invitation.customerName || '-'}
+                </TableCell>
+                <TableCell>
+                  {format(new Date(invitation.createdAt), 'MMM d, yyyy')}
+                </TableCell>
+                <TableCell>
+                  {format(new Date(invitation.expiresAt), 'MMM d, yyyy')}
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-2">
+                    {onResend && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onResend(invitation._id)}
+                      >
+                        Resend
+                      </Button>
+                    )}
+                    {onRevoke && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteClick(invitation)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        Delete
+                      </Button>
+                    )}
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog
+        open={!!invitationToDelete}
+        onOpenChange={() => setInvitationToDelete(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Invitation</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete the invitation for {invitationToDelete?.email}?
+              They will no longer be able to join using this invite.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

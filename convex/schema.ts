@@ -64,6 +64,8 @@ export default defineSchema({
     )),
     // For Client users: which customer they belong to
     customerId: v.optional(v.id("customers")),
+    // For Admin users: which user they are currently acting as
+    impersonatingUserId: v.optional(v.id("users")),
     // Profile data (synced from WorkOS)
     email: v.string(),
     firstName: v.optional(v.string()),

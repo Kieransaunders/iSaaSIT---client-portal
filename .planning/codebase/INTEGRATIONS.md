@@ -1,157 +1,271 @@
 # External Integrations
 
-**Analysis Date:** 2026-02-09
+> Third-party services, APIs, and webhook endpoints used by iSaaSIT.
 
-## APIs & External Services
+## Authentication Provider
 
-**Authentication & Identity:**
-- WorkOS - Enterprise authentication, SSO, user management
-  - SDK/Client: @workos/authkit-tanstack-react-start 0.5.0 (frontend), @workos-inc/node 8.1.0 (backend)
-  - Auth: Environment variables WORKOS_CLIENT_ID and WORKOS_API_KEY
-  - Endpoints: https://api.workos.com/, https://api.workos.com/sso/jwks/{clientId}
-  - Functions: `src/start.ts` (middleware), `src/routes/callback.tsx` (OAuth callback handler)
-  - Backend integration: `convex/auth.config.ts` (JWT token validation)
+### WorkOS AuthKit
 
-**Billing & Payments (Planned):**
-- Lemon Squeezy - Payment processing and subscription management
-  - Referenced in: `convex/schema.ts` (subscriptionId, subscriptionStatus fields on orgs table)
-  - Webhook endpoint planned: POST /webhooks/lemon-squeezy (documented in API.md)
-  - Webhook handler pattern: Signature validation via x-signature header, webhook event parsing, internal mutation invocation
-  - Not fully implemented yet (schema prepared, webhook structure defined, but handler code not present)
+**Primary Auth Provider** - Enterprise-grade authentication platform
 
-## Data Storage
+| Aspect | Details |
+|--------|---------|
+| **Service** | WorkOS AuthKit |
+| **SDK** | `@workos/authkit-tanstack-react-start` (v0.5.0) |
+| **Node SDK** | `@workos-inc/node` (v8.1.0) |
+| **Protocol** | OAuth 2.0 + JWT |
+| **Token Type** | RS256 signed JWT |
 
-**Primary Database:**
-- Convex - Backend-as-a-Service with built-in database and real-time sync
-  - Connection: Via environment variable VITE_CONVEX_URL (cloud deployment URL)
-  - Client: convex/react for frontend queries/mutations, convex/server for backend server-side functions
-  - Location: `convex/schema.ts` defines all tables:
-    - `orgs` - Organizations (multi-tenant root, synced from WorkOS with Lemon Squeezy subscription data)
-    - `users` - User profiles (extends WorkOS user data with app-specific fields like role and org membership)
-    - `customers` - Client companies managed by organizations
-    - `staffCustomerAssignments` - Maps staff to customers they can access
-    - `numbers` - Temporary table from template
-  - Indexes: Defined on all tables for common queries (by_org, by_workos_user_id, by_subscription_id, etc.)
+**Configuration Files:**
+- `convex/auth.config.ts` - JWT validation configuration
+- `convex.json` - AuthKit deployment settings (dev/preview/prod)
 
-**File Storage:**
-- Not detected - Local filesystem only (no S3, CloudFront, or similar)
-
-**Caching:**
-- TanStack React Query 5.90.20 - Client-side cache for Convex data
-- Convex built-in real-time sync - Automatic subscription management and cache invalidation
-- No explicit Redis or memcached
-
-## Authentication & Identity
-
-**Auth Provider:**
-- WorkOS (Enterprise auth provider)
-  - Implementation:
-    - Frontend: @workos/authkit-tanstack-react-start provides AuthKitProvider, useAuth hook, and middleware
-    - Backend: Custom JWT validation via RS256 public key from WorkOS JWKS endpoint
-    - Middleware: `src/start.ts` applies authkitMiddleware() to all requests
-    - Protected routes: `src/routes/_authenticated.tsx` enforces authentication
-  - Token validation: Convex auth.config.ts validates two JWT issuers from WorkOS
-  - SSO: Configurable via WorkOS dashboard, supports SAML/OIDC
-  - Redirect URIs: dev=http://localhost:3000/callback, prod=https://${VERCEL_PROJECT_PRODUCTION_URL}/callback
-
-**Session Management:**
-- WORKOS_COOKIE_PASSWORD (32+ chars) - Encrypts session cookies
-- Cookies set by authkitMiddleware and validated on each request
-- Session data includes: user identity, organization, role
-
-## Monitoring & Observability
-
-**Error Tracking:**
-- Not detected - No Sentry, LogRocket, or similar
-
-**Logs:**
-- console.* for development (no structured logging detected)
-- Convex dashboard for backend error logs
-- Netlify logs for deployment/HTTP errors
-
-## CI/CD & Deployment
-
-**Hosting:**
-- Netlify - Primary deployment platform via .netlify/netlify.toml
-  - Build command: npm run build:combined
-  - Publish directory: dist/client
-  - SSR: Handled by @netlify/vite-plugin-tanstack-start (Netlify Functions)
-
-**Backend Hosting:**
-- Convex Cloud - Managed BaaS hosting (convex dev for local, deployed via Convex CLI)
-
-**CI Pipeline:**
-- Not detected in codebase - No GitHub Actions, GitLab CI, or CircleCI config
-- Assumes manual deployment or Git push triggers via Netlify
-
-## Environment Configuration
-
-**Required environment vars:**
-```
-# WorkOS
-WORKOS_CLIENT_ID=client_your_client_id_here
-WORKOS_API_KEY=sk_test_your_api_key_here
-WORKOS_COOKIE_PASSWORD=your_secure_password_here_must_be_at_least_32_characters_long
+**Environment Variables:**
+```bash
+WORKOS_CLIENT_ID=client_xxx
+WORKOS_API_KEY=sk_test_xxx
+WORKOS_COOKIE_PASSWORD=xxx  # Min 32 chars
 WORKOS_REDIRECT_URI=http://localhost:3000/callback
+```
+
+**Features Used:**
+- OAuth/OIDC authentication
+- Organization management
+- User invitations
+- Role-based access (Admin, Staff, Client)
+- JWT token validation via JWKS
+
+**Integration Points:**
+- `src/routes/__root.tsx` - AuthKitProvider setup
+- `src/routes/callback.tsx` - OAuth callback handler
+- `src/routes/_authenticated.tsx` - Protected route guard
+- `convex/auth.config.ts` - Convex JWT validation
+- `convex/workos/` - WorkOS organization sync
+- `convex/webhooks/workos.ts` - WorkOS webhooks
+
+**JWKS Endpoint:**
+```
+https://api.workos.com/sso/jwks/${WORKOS_CLIENT_ID}
+```
+
+## Database and Storage
+
+### Convex
+
+**Primary Database** - Serverless reactive database
+
+| Aspect | Details |
+|--------|---------|
+| **Service** | Convex (convex.dev) |
+| **Client SDK** | `convex` (v1.31.7) |
+| **React Integration** | `@convex-dev/react-query` (v0.1.0) |
+| **Language** | TypeScript (transpiled to Deno) |
+| **Model** | Document store with real-time subscriptions |
+
+**Configuration:**
+- `convex.json` - Deployment configuration
+- `convex/schema.ts` - Database schema definition
+
+**Environment Variable:**
+```bash
+VITE_CONVEX_URL=https://xxx.convex.cloud
+```
+
+**Schema Tables:**
+```typescript
+// convex/schema.ts
+- orgs              # Organizations with billing data
+- customers         # Client companies
+- users             # User profiles with roles
+- staffCustomerAssignments  # Access control mapping
+- pendingInvitations # WorkOS invitation tracking
+- numbers           # Template data (temporary)
+```
+
+**Convex Function Types:**
+- **Queries** - Read operations (cached, realtime)
+- **Mutations** - Write operations (transactional)
+- **Actions** - External API calls (HTTP)
+- **HTTP Routes** - Webhook endpoints
+
+**Feature Modules:**
+```
+convex/
+├── assignments/     # Staff-customer assignments
+├── billing/         # Subscription and billing
+├── customers/       # Customer CRUD
+├── invitations/     # User invitations
+├── lemonsqueezy/    # Billing provider integration
+├── orgs/            # Organization management
+├── users/           # User management
+├── webhooks/        # Webhook handlers
+└── workos/          # WorkOS synchronization
+```
+
+## Billing and Payments
+
+### Lemon Squeezy
+
+**Payment Processor** - Merchant of Record for subscriptions
+
+| Aspect | Details |
+|--------|---------|
+| **Service** | Lemon Squeezy |
+| **SDK** | `@lemonsqueezy/lemonsqueezy.js` (v4.0.0) |
+| **Model** | Subscription-based SaaS billing |
+
+**Integration Files:**
+- `convex/lemonsqueezy/webhook.ts` - Webhook handler
+- `convex/lemonsqueezy/signature.ts` - Signature verification
+- `convex/lemonsqueezy/sync.ts` - Subscription sync
+- `convex/lemonsqueezy/plans.ts` - Plan management
+- `convex/billing/` - Billing queries and actions
+
+**Webhook Endpoint:**
+```
+POST /lemonsqueezy/webhook
+```
+
+**Configuration:**
+- Webhook secret set in Convex dashboard
+- Signature verification using HMAC
+
+**Synced Data:**
+- Subscription status
+- Plan metadata (maxCustomers, maxStaff, maxClients)
+- Customer portal URLs
+- Trial dates
+
+## Webhook Endpoints
+
+**File:** `convex/http.ts`
+
+### 1. WorkOS Webhooks
+
+```
+POST /webhooks/workos
+```
+
+**Handler:** `convex/webhooks/workos.ts`
+
+**Events Handled:**
+- Organization created/updated
+- User membership changes
+- Invitation status updates
+
+### 2. Lemon Squeezy Webhooks
+
+```
+POST /lemonsqueezy/webhook
+```
+
+**Handler:** `convex/lemonsqueezy/webhook.ts`
+
+**Events Handled:**
+- Subscription created/updated/cancelled
+- Payment success/failure
+- Plan changes
+
+## Deployment and Hosting
+
+### Netlify
+
+**Primary Hosting Platform**
+
+| Aspect | Details |
+|--------|---------|
+| **Build Command** | `npm run build:combined` |
+| **Publish Directory** | `dist/client` |
+| **Node Version** | 22.x |
+| **Plugin** | `@netlify/vite-plugin-tanstack-start` (v1.2.8) |
+
+**Configuration:** `netlify.toml`
+
+**Features:**
+- SSR function deployment
+- Static asset serving
+- Redirect rules for docs
+- Cache headers
+
+**Redirects:**
+```
+/docs/*      → Static docs files
+/blog/*      → /docs/blog/*
+```
+
+### Convex Deployment
+
+**Separate from Frontend**
+
+```bash
+npx convex deploy    # Deploy functions
+npx convex dev       # Development mode
+```
+
+**Environments:**
+- Dev: Local development with `convex dev`
+- Preview: Branch deploys
+- Prod: Production deployment
+
+## External SDKs and Libraries
+
+### Third-Party SDKs Summary
+
+| Provider | SDK | Version | Purpose |
+|----------|-----|---------|---------|
+| WorkOS | `@workos/authkit-tanstack-react-start` | 0.5.0 | React integration |
+| WorkOS | `@workos-inc/node` | 8.1.0 | Server-side API |
+| Lemon Squeezy | `@lemonsqueezy/lemonsqueezy.js` | 4.0.0 | Billing API |
+| Convex | `convex` | 1.31.7 | Database client |
+| Convex | `@convex-dev/react-query` | 0.1.0 | React Query bridge |
+
+### API Endpoints (External)
+
+**WorkOS API:**
+```
+https://api.workos.com/
+```
+
+**Lemon Squeezy API:**
+```
+https://api.lemonsqueezy.com/
+```
+
+**Convex API:**
+```
+https://{deployment-name}.convex.cloud
+```
+
+## Security Considerations
+
+### Environment Variables (Required)
+
+```bash
+# WorkOS AuthKit
+WORKOS_CLIENT_ID              # OAuth client ID
+WORKOS_API_KEY                # API key (sk_test_ or sk_live_)
+WORKOS_COOKIE_PASSWORD        # Cookie encryption (32+ chars)
+WORKOS_REDIRECT_URI           # OAuth callback URL
 
 # Convex
-VITE_CONVEX_URL=https://your-convex-deployment.convex.cloud
+VITE_CONVEX_URL               # Convex deployment URL
+
+# Lemon Squeezy (stored in Convex dashboard)
+LEMONSQUEEZY_API_KEY          # API key
+LEMONSQUEEZY_WEBHOOK_SECRET   # Webhook signing secret
 ```
 
-**Optional vars:**
-- None detected explicitly, but development/preview/prod environments have conditional config in convex.json
+### Authentication Flow
 
-**Secrets location:**
-- `.env.local` (git-ignored) for development
-- Environment variable UI in Netlify deployment settings for production
-- Convex dashboard for backend secrets
-- WorkOS dashboard for API keys and app settings
+1. User initiates login via WorkOS AuthKit
+2. WorkOS redirects to `WORKOS_REDIRECT_URI` (`/callback`)
+3. JWT token stored in cookie (encrypted with `WORKOS_COOKIE_PASSWORD`)
+4. Convex validates JWT via JWKS on each request
+5. User identity available in Convex functions via `ctx.auth.getUserIdentity()`
 
-## Webhooks & Callbacks
+### Data Isolation
 
-**Incoming Webhooks:**
-- POST /webhooks/lemon-squeezy - Lemon Squeezy webhook endpoint (planned but not fully implemented)
-  - Expected headers: x-signature for HMAC validation
-  - Expected body: JSON with meta.event_name and data fields
-  - Handler: Signature validation → event parsing → internal mutation dispatch
-  - Implementation location: Convex HTTP action (not yet visible in codebase)
-
-**Outgoing Webhooks:**
-- None detected
-- Convex can invoke external HTTP requests via ctx.fetch() in actions (pattern shown in comments in convex/myFunctions.ts)
-
-## OAuth & Third-Party Auth Flows
-
-**WorkOS OAuth 2.0:**
-- Authorization endpoint: WorkOS dashboard configurable
-- Redirect URI: WORKOS_REDIRECT_URI env var (http://localhost:3000/callback for dev)
-- Handler: `src/routes/callback.tsx` - Calls handleCallbackRoute from authkitMiddleware
-- Exchange: authkitMiddleware handles code exchange and session creation
-- Scopes: Default WorkOS scopes (email, profile, org membership)
-
-## Real-Time Features
-
-**Convex Real-Time Sync:**
-- useQuery() - Subscribes to live data from database
-- useMutation() - Sends changes that trigger automatic cache invalidation
-- Location: Extensively used in routes (`src/routes/_authenticated/*.tsx`)
-- Examples: `src/routes/_authenticated/customers.tsx`, `src/routes/_authenticated/dashboard.tsx`
-
-## Data Synchronization
-
-**WorkOS → Convex Sync:**
-- One-directional: WorkOS is source of truth for users and org membership
-- Sync points:
-  - On login: `src/routes/_authenticated.tsx` may fetch updated user data
-  - On org creation: `convex/workos/createOrg.ts` creates WorkOS org, then stores in Convex
-  - On org update: Similar pattern in `convex/workos/updateOrg.ts`
-- No webhook-based sync detected (manual sync on user actions)
-
-**Lemon Squeezy → Convex Sync (Planned):**
-- Webhook-based: Lemon Squeezy posts to /webhooks/lemon-squeezy
-- Sync events: order.created, subscription.created, subscription.updated, subscription.cancelled
-- Target fields: subscriptionId, subscriptionStatus, planId, maxCustomers, maxStaff, maxClients on orgs table
-
----
-
-*Integration audit: 2026-02-09*
+- Organization-level data isolation via `orgId`
+- Role-based access (Admin/Staff/Client)
+- Customer-level isolation for Client role
+- Staff-customer assignments for selective access

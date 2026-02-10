@@ -1,5 +1,6 @@
 import { ConvexError, v } from "convex/values";
 import { internalQuery, query } from "../_generated/server";
+import { getEffectiveUser } from "../users/utils";
 
 /**
  * Get the current user's organization
@@ -7,18 +8,7 @@ import { internalQuery, query } from "../_generated/server";
 export const getMyOrg = query({
   args: {},
   handler: async (ctx) => {
-    const user = await ctx.auth.getUserIdentity();
-    if (!user) {
-      throw new ConvexError("Not authenticated");
-    }
-
-    const workosUserId = user.subject;
-
-    // Find user record
-    const userRecord = await ctx.db
-      .query("users")
-      .withIndex("by_workos_user_id", (q) => q.eq("workosUserId", workosUserId))
-      .first();
+    const userRecord = await getEffectiveUser(ctx);
 
     if (!userRecord?.orgId) {
       return null;
@@ -43,17 +33,15 @@ export const getMyOrg = query({
 export const getOrgById = query({
   args: {},
   handler: async (ctx) => {
-    const user = await ctx.auth.getUserIdentity();
-    if (!user) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
       throw new ConvexError("Not authenticated");
     }
-
-    const workosUserId = user.subject;
 
     // Find user to verify they belong to this org
     const userRecord = await ctx.db
       .query("users")
-      .withIndex("by_workos_user_id", (q) => q.eq("workosUserId", workosUserId))
+      .withIndex("by_workos_user_id", (q) => q.eq("workosUserId", identity.subject))
       .first();
 
     if (!userRecord?.orgId) {
@@ -72,22 +60,18 @@ export const getOrgById = query({
 export const hasOrg = query({
   args: {},
   handler: async (ctx) => {
-    const user = await ctx.auth.getUserIdentity();
-    if (!user) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
       return { hasOrg: false, isAuthenticated: false };
     }
 
-    const workosUserId = user.subject;
-
-    const userRecord = await ctx.db
-      .query("users")
-      .withIndex("by_workos_user_id", (q) => q.eq("workosUserId", workosUserId))
-      .first();
+    const userRecord = await getEffectiveUser(ctx);
 
     return {
       hasOrg: !!userRecord?.orgId,
       isAuthenticated: true,
       role: userRecord?.role,
+      userId: userRecord?._id,
     };
   },
 });
@@ -130,5 +114,18 @@ export const getOrgByWorkosOrgId = internalQuery({
       .first();
 
     return org;
+  },
+});
+
+/**
+ * Internal query to get org by Convex ID
+ * Used by server-side sync actions
+ */
+export const getOrgByIdInternal = internalQuery({
+  args: {
+    orgId: v.id("orgs"),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.get("orgs", args.orgId);
   },
 });

@@ -1,6 +1,6 @@
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
 import { getAuth } from '@workos/authkit-tanstack-react-start';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAction, useQuery } from 'convex/react';
 import { Building2, CheckCircle2, Loader2 } from 'lucide-react';
 import { api } from '../../convex/_generated/api';
@@ -29,15 +29,45 @@ function OnboardingPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [syncAttempted, setSyncAttempted] = useState(false);
 
   // Check if user already has an org
   const hasOrgResult = useQuery(api.orgs.get.hasOrg);
   const createOrg = useAction(api.workos.createOrg.createOrganization);
+  const syncCurrentUser = useAction(api.users.syncActions.syncCurrentUserFromWorkOS);
+
+  useEffect(() => {
+    let cancelled = false;
+    syncCurrentUser()
+      .catch((err) => {
+        console.error('Failed to sync user from WorkOS:', err);
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setSyncAttempted(true);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [syncCurrentUser]);
 
   // If user already has org, redirect to dashboard
-  if (hasOrgResult?.hasOrg) {
+  if (syncAttempted && hasOrgResult?.hasOrg) {
     navigate({ to: '/dashboard' });
     return null;
+  }
+
+  if (!syncAttempted || hasOrgResult === undefined) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-muted/50 p-4">
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Checking your organization...
+        </div>
+      </div>
+    );
   }
 
   const handleCreateOrg = async (e: React.FormEvent) => {

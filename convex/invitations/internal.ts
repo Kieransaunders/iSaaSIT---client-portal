@@ -1,6 +1,11 @@
 import { v } from "convex/values";
 import { internalMutation, internalQuery } from "../_generated/server";
 
+const pendingInvitationSummary = v.object({
+  _id: v.id("pendingInvitations"),
+  expiresAt: v.number(),
+});
+
 /**
  * Internal query to get pending invitation by ID
  */
@@ -156,5 +161,151 @@ export const getPendingInvitationByWorkosId = internalQuery({
       .first();
 
     return invitation;
+  },
+});
+
+/**
+ * Internal query to check if an org member exists by email (case-insensitive)
+ */
+export const isOrgMemberByEmail = internalQuery({
+  args: {
+    orgId: v.id("orgs"),
+    email: v.string(),
+  },
+  returns: v.boolean(),
+  handler: async (ctx, args) => {
+    const normalizedEmail = args.email.trim().toLowerCase();
+    const users = await ctx.db
+      .query("users")
+      .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
+      .collect();
+
+    return users.some(
+      (user) => !user.deletedAt && user.email.toLowerCase() === normalizedEmail
+    );
+  },
+});
+
+/**
+ * Internal query to get a pending invitation by email (case-insensitive)
+ */
+export const getPendingInvitationByEmail = internalQuery({
+  args: {
+    orgId: v.id("orgs"),
+    email: v.string(),
+  },
+  returns: v.union(v.null(), pendingInvitationSummary),
+  handler: async (ctx, args) => {
+    const normalizedEmail = args.email.trim().toLowerCase();
+    const invitations = await ctx.db
+      .query("pendingInvitations")
+      .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
+      .collect();
+
+    const invitation = invitations.find(
+      (pending) => pending.email.toLowerCase() === normalizedEmail
+    );
+
+    if (!invitation) {
+      return null;
+    }
+
+    return {
+      _id: invitation._id,
+      expiresAt: invitation.expiresAt,
+    };
+  },
+});
+
+/**
+ * Internal query to find the most recent pending invitation by email (case-insensitive)
+ * across all organizations. Used as a fallback when WorkOS membership data isn't available.
+ */
+export const getPendingInvitationByEmailGlobal = internalQuery({
+  args: {
+    email: v.string(),
+  },
+  returns: v.union(
+    v.null(),
+    v.object({
+      _id: v.id("pendingInvitations"),
+      workosInvitationId: v.string(),
+      orgId: v.id("orgs"),
+      role: v.union(v.literal("staff"), v.literal("client")),
+      customerId: v.optional(v.id("customers")),
+      createdAt: v.number(),
+      expiresAt: v.number(),
+    })
+  ),
+  handler: async (ctx, args) => {
+    const normalizedEmail = args.email.trim().toLowerCase();
+    const invitations = await ctx.db.query("pendingInvitations").collect();
+
+    const now = Date.now();
+    const matches = invitations.filter(
+      (pending) =>
+        pending.email.toLowerCase() === normalizedEmail && pending.expiresAt > now
+    );
+
+    if (matches.length === 0) {
+      return null;
+    }
+
+    matches.sort((a, b) => b.createdAt - a.createdAt);
+    const invitation = matches[0];
+
+    return {
+      _id: invitation._id,
+      workosInvitationId: invitation.workosInvitationId,
+      orgId: invitation.orgId,
+      role: invitation.role,
+      customerId: invitation.customerId,
+      createdAt: invitation.createdAt,
+      expiresAt: invitation.expiresAt,
+    };
+  },
+});
+
+/**
+ * Internal query to get pending invitation details by email (case-insensitive)
+ * Used when syncing invited users who accepted their WorkOS invitation
+ */
+export const getPendingInvitationDetailsByEmail = internalQuery({
+  args: {
+    orgId: v.id("orgs"),
+    email: v.string(),
+  },
+  returns: v.union(
+    v.null(),
+    v.object({
+      _id: v.id("pendingInvitations"),
+      workosInvitationId: v.string(),
+      role: v.union(v.literal("staff"), v.literal("client")),
+      customerId: v.optional(v.id("customers")),
+      expiresAt: v.number(),
+    })
+  ),
+  handler: async (ctx, args) => {
+    const normalizedEmail = args.email.trim().toLowerCase();
+    const invitations = await ctx.db
+      .query("pendingInvitations")
+      .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
+      .collect();
+
+    const invitation = invitations.find(
+      (pending) => pending.email.toLowerCase() === normalizedEmail
+    );
+
+    if (!invitation) {
+      return null;
+    }
+
+    return {
+      _id: invitation._id,
+      workosInvitationId: invitation.workosInvitationId,
+      role: invitation.role,
+      customerId: invitation.customerId,
+      expiresAt: invitation.expiresAt,
+    };
   },
 });

@@ -1,18 +1,18 @@
-# iSaasIT — Project Scope
+# iSaaSIT — Project Scope
 
-**Repo:** `iconnectit/iSaasIT` (public fork of `get-convex/convex-saas`)
+**Repo:** `iconnectit/iSaaSIT` (public fork of `get-convex/workos-authkit`)
 
-**Purpose:** Open-source SaaS starter for agencies/freelancers who need a repeatable client template with multi-tenancy and client portal capabilities.
+**Purpose:** Open-source SaaS starter for agencies and freelancers who need a repeatable client template with multi-tenancy and client portal capabilities.
 
 ---
 
 ## Vision
 
-iSaasIT empowers agencies and freelancers to bootstrap SaaS products with minimal setup by providing:
+iSaaSIT empowers agencies and freelancers to bootstrap SaaS products with minimal setup by providing:
 
 - Robust authentication
 - Multi-tenant foundation with client portal support
-- Billing and subscription handling with usage caps
+- Billing and subscription handling with usage caps (planned)
 - Role-based data scoping
 - Type-safe data and API layers
 
@@ -24,22 +24,22 @@ iSaasIT empowers agencies and freelancers to bootstrap SaaS products with minima
 |-------|------------|
 | Frontend Framework | React |
 | Routing & SSR | TanStack Start |
-| Styling | Tailwind CSS |
-| UI Components | shadcn/ui |
+| Styling | Tailwind CSS v4 |
+| UI Components | shadcn/ui (planned) |
 | Backend | Convex (serverless) |
-| Authentication | Better Auth (via `@convex-dev/better-auth`) |
-| Billing | Lemon Squeezy |
-| Email | Resend + React Email |
-| Dev Tooling | TypeScript, ESLint, Prettier, Vitest |
+| Authentication | WorkOS AuthKit (JWT via WorkOS) |
+| Billing | Lemon Squeezy (planned) |
+| Dev Tooling | TypeScript, ESLint, Prettier |
+| Build Tooling | Vite |
 
-### Changes from Base Template (convex-saas)
+### Changes from Base Template (get-convex/workos-authkit)
 
-| Layer | convex-saas | iSaasIT |
-|-------|-------------|---------|
-| Auth | Convex Auth | Better Auth |
-| Billing | Stripe | Lemon Squeezy |
-| Routing | TanStack Router (Vite SPA) | TanStack Start (SSR) |
-| Tenancy | Single user | Org → Customer → User |
+| Area | Base Template | iSaaSIT |
+|------|---------------|---------|
+| Auth | WorkOS AuthKit | WorkOS AuthKit (same) |
+| Billing | None | Lemon Squeezy (planned) |
+| Tenancy | Single-org starter | Org → Customer → User |
+| Product | Generic starter | Agency/client portal focus |
 
 ---
 
@@ -68,7 +68,7 @@ Customer
 └── updatedAt
 
 User
-├── id (from Better Auth)
+├── id (from WorkOS)
 ├── orgId (FK → Org)
 ├── role (Admin | Staff | Client)
 ├── customerId (FK → Customer, required if role = Client)
@@ -105,7 +105,7 @@ StaffCustomerAssignment
 
 - **Freemium:** Limited free tier, paid plans unlock more
 - **Billing level:** Org (not individual users)
-- **Provider:** Lemon Squeezy
+- **Provider:** Lemon Squeezy (planned)
 
 ### Usage Caps
 
@@ -119,7 +119,7 @@ Caps are defined in Lemon Squeezy plan metadata and synced to the Org record on 
 
 ### Subscription Flow
 
-1. User signs up (Better Auth)
+1. User signs up (WorkOS AuthKit)
 2. User creates Org (becomes Admin)
 3. Org starts on free tier (default caps applied)
 4. User can upgrade via Lemon Squeezy checkout
@@ -132,8 +132,8 @@ Caps are defined in Lemon Squeezy plan metadata and synced to the Org record on 
 
 ### Signup & Org Creation
 
-1. User signs up via Better Auth (email/password or OAuth)
-2. User lands on "Create your organisation" screen
+1. User signs up via WorkOS AuthKit
+2. User lands on "Create your organization" screen
 3. User enters org name, creates Org
 4. User becomes Admin of that Org
 5. Free tier caps applied to Org
@@ -157,39 +157,13 @@ Caps are defined in Lemon Squeezy plan metadata and synced to the Org record on 
 
 ---
 
-## Migration Plan
+## Roadmap (High Level)
 
-Incremental migration from `convex-saas` base:
-
-### Phase 1: Auth Swap
-- Remove Convex Auth
-- Integrate Better Auth via `@convex-dev/better-auth`
-- Verify login/logout/session management works
-
-### Phase 2: Routing Upgrade
-- Migrate from TanStack Router (Vite SPA) to TanStack Start
-- Add SSR support
-- Verify auth works with SSR
-
-### Phase 3: Multi-Tenancy
-- Add Org, Customer, StaffCustomerAssignment tables
-- Update User model with role and customerId
-- Add Org creation flow post-signup
-- Add Customer CRUD
-- Add Staff/Client invite flows
-
-### Phase 4: Billing Swap
-- Remove Stripe integration
-- Add Lemon Squeezy integration
-- Implement webhook handler for subscription events
-- Store plan caps on Org record
-- Add upgrade/checkout flow
-
-### Phase 5: Role-Based Scoping
-- Implement data scoping helpers in Convex
-- Apply scoping to all queries based on user role
-- Add UI guards for role-based feature access
-- Test Admin/Staff/Client access patterns
+- Org creation and management (in progress)
+- Customer management and staff assignments (in progress)
+- Role-based access control and data scoping (in progress)
+- Billing integration with Lemon Squeezy (planned)
+- Usage cap enforcement (planned)
 
 ---
 
@@ -205,7 +179,7 @@ Incremental migration from `convex-saas` base:
 
 ## Open Questions
 
-- [ ] Email templates — use existing Resend setup or customise?
+- [ ] Email templates — choose provider and template approach (TBD)
 - [ ] Admin dashboard — keep existing or rebuild?
 - [ ] Onboarding flow — wizard style or minimal?
 - [ ] Deployment target — Vercel? Netlify? Document both?
@@ -218,4 +192,4 @@ Incremental migration from `convex-saas` base:
 
 **License:** MIT (matching upstream)
 
-**Base:** Fork of `get-convex/convex-saas`
+**Base:** Fork of `get-convex/workos-authkit`

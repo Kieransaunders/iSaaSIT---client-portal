@@ -1,0 +1,3 @@
+interface:
+  display_name: "workos"
+  short_description: "WorkOS authentication and user management platform. Use when implementing AuthKit, SSO, OAuth, directory sync, RBAC, user authentication, organization management, admin portal, audit logs, webhooks, MFA, magic auth, or when the user mentions WorkOS, SAML, SCIM, enterprise features, or session management."

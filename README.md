@@ -1,190 +1,348 @@
 # iSaaSIT 🚀
 
-**The open-source starter kit for agencies managing client companies. Launch your client portal with proper data isolation, team assignments, and role-based access—without rebuilding the foundation every time.**
+**The open-source SaaS starter kit for agencies managing client companies.**
+
+Launch your client portal with proper data isolation, team assignments, and billing—without rebuilding auth, tenancy, and billing infrastructure every time.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![React 19](https://img.shields.io/badge/React-19-61DAFB?logo=react)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript)](https://www.typescriptlang.org/)
 
 ![iSaaSIT Homepage](screenshots/homepage.png)
 
-## Who This Is For
+---
 
-**iSaaSIT is built specifically for agencies and service businesses** that manage multiple client companies:
+## ✨ What Makes This Different
 
-- 🎨 **Design & Creative Agencies** - Manage client projects with isolated workspaces
-- 💼 **Consulting Firms** - Give clients portal access to their engagements
-- 📊 **Accounting & Legal Practices** - Secure client data with proper isolation
-- 💻 **Development Shops** - Manage client projects and team assignments
-- 📈 **Marketing Agencies** - Client dashboards for campaigns and reporting
-- 🔧 **IT Service Providers** - Client portals for managed services
+Most SaaS starter kits give you auth + billing. **iSaaSIT gives you multi-tenant client portals**—the architecture agencies actually need:
 
-**The architecture:** Your agency (Org) → Client Companies (Customers) → Team Members + Client Users
+```
+┌─────────────────┐
+│   Your Agency   │  ← Org (Admin manages everything)
+│   (Admin)       │
+└────────┬────────┘
+         │
+    ┌────┴────┬────────┬────────┐
+    ▼         ▼        ▼        ▼
+┌───────┐ ┌───────┐ ┌───────┐ ┌───────┐
+│Client │ │Client │ │Client │ │Client │  ← Customers (isolated data)
+│   A   │ │   B   │ │   C   │ │   D   │
+└───┬───┘ └───┬───┘ └───┬───┘ └───┬───┘
+    │         │         │         │
+   Staff    Staff     Staff      Staff   ← Team assignments
+   (John)   (Jane)    (John)     (Jane)
+```
 
-If you need data isolation between clients, team assignments to specific accounts, and client portal access, this is your starting point.
+**Three roles, proper isolation:**
+- **Admin** - Manages agency, billing, all clients
+- **Staff** - Access only to assigned client accounts  
+- **Client** - Access only to their own company data
 
-## What's inside?
+---
 
-Everything you need to build your client portal:
+## 🎯 Who Is This For?
 
-✅ **Client data isolation** - Each client company only sees their own data
-✅ **Team assignments** - Assign staff members to specific client accounts
-✅ **Role-based access** - Admin (agency owner), Staff (your team), Client (customer users)
-✅ **Enterprise auth** - WorkOS AuthKit with SSO, social login, and magic links
-✅ **Usage-based billing** - Lemon Squeezy integration with client/staff limits
-✅ **Modern stack** - React 19, TanStack Start, Convex, Tailwind CSS v4
-✅ **Type-safe** - End-to-end TypeScript from backend to frontend
-✅ **AI-Ready** - Cursor rules, Claude Code skills, and GSD integration
+iSaaSIT is built specifically for **agencies and service businesses** managing multiple clients:
 
-> **🎨 New:** 6 Claude Code skills now bundled in the repo, including **ui-ux-pro-max** for instant design system generation (50+ styles, 97 palettes, 57 font pairings). Use `/ui-ux-pro-max`, `/convex`, `/tanstack` and more - no setup required!
+| Business Type | Use Case |
+|--------------|----------|
+| 🎨 **Design Agencies** | Client project portals with file sharing |
+| 💼 **Consulting Firms** | Client dashboards for deliverables |
+| 📊 **Accounting Practices** | Secure document exchange |
+| 💻 **Development Shops** | Client project management |
+| 📈 **Marketing Agencies** | Campaign dashboards & reporting |
+| 🔧 **IT Services** | Managed services client portals |
 
-After the initial setup (<2 minutes) you'll have a working full-stack app using:
+**Perfect if you need:**
+- ✅ Data isolation between clients
+- ✅ Staff assigned to specific accounts
+- ✅ Client portal login for customers
+- ✅ Usage-based billing (per client/staff limits)
 
-- Convex as your backend (database, server logic)
-- [React](https://react.dev/) as your frontend (web page interactivity)
-- [TanStack Start](https://tanstack.com/start) for modern full-stack React with file-based routing
-- [Tailwind](https://tailwindcss.com/) for building great looking accessible UI
-- [WorkOS AuthKit](https://authkit.com/) for authentication
+---
 
-## Get started
+## 🚀 Features
 
-### Quick Setup (Recommended)
+### Core Platform
+| Feature | Status | Description |
+|---------|--------|-------------|
+| 🔐 **Enterprise Auth** | ✅ Ready | WorkOS AuthKit with SSO, social login, magic links |
+| 🏢 **Multi-tenant Orgs** | ✅ Ready | Complete data isolation between agencies |
+| 👥 **Role-based Access** | ✅ Ready | Admin / Staff / Client roles with different permissions |
+| 📊 **Dashboard** | ✅ Ready | Agency overview with usage stats |
+| ⚙️ **Settings** | ✅ Ready | Org configuration & preferences |
+
+### Client Management
+| Feature | Status | Description |
+|---------|--------|-------------|
+| 🏢 **Customer CRUD** | ✅ Ready | Create, manage client companies |
+| 👤 **Staff Assignments** | ✅ Ready | Assign team members to specific clients |
+| 🔒 **Data Isolation** | ✅ Ready | Staff/clients only see their data (backend enforced) |
+| 🔍 **Search & Filter** | ✅ Ready | Find customers quickly |
+
+### Team & Invites
+| Feature | Status | Description |
+|---------|--------|-------------|
+| 📧 **Email Invitations** | ✅ Ready | Invite staff & clients via WorkOS |
+| 🎭 **Role Assignment** | ✅ Ready | Set role during invitation |
+| 📋 **Pending Invites** | ✅ Ready | Track and manage invitations |
+| 🚫 **Soft Delete** | ✅ Ready | Remove users without data loss |
+
+### Billing
+| Feature | Status | Description |
+|---------|--------|-------------|
+| 💳 **Lemon Squeezy** | ✅ Ready | Subscription billing integration |
+| 📈 **Usage Caps** | ✅ Ready | Enforce limits (customers, staff, clients) |
+| 🔄 **Plan Upgrades** | ✅ Ready | Self-service checkout |
+| 🧾 **Customer Portal** | ✅ Ready | View invoices, manage subscription |
+| ⚠️ **Limit Warnings** | ✅ Ready | UI alerts when approaching caps |
+
+### Developer Experience
+| Feature | Status | Description |
+|---------|--------|-------------|
+| 📘 **Type Safety** | ✅ Ready | End-to-end TypeScript |
+| 🤖 **AI Skills** | ✅ Ready | 6 Claude Code skills bundled |
+| 🎨 **shadcn/ui** | ✅ Ready | 25+ accessible components |
+| 🔄 **Real-time** | ✅ Ready | Live data updates via Convex |
+| 📱 **Responsive** | ✅ Ready | Works on all screen sizes |
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology | Why |
+|-------|------------|-----|
+| **Frontend** | React 19 + TanStack Start | Modern React with SSR, file-based routing |
+| **Backend** | Convex | Real-time database, serverless functions |
+| **Auth** | WorkOS AuthKit | Enterprise-grade, SSO-ready |
+| **Styling** | Tailwind CSS v4 + shadcn/ui | Utility-first, accessible components |
+| **Billing** | Lemon Squeezy | Merchant of record, global tax handling |
+| **Build** | Vite 7 | Fast dev, optimized production |
+
+---
+
+## 📦 Quick Start
 
 ```bash
-# Clone and install
-git clone <repository-url>
+# 1. Clone & install
+git clone https://github.com/Kieransaunders/iSaaSIT.git
 cd iSaaSIT
 npm install
 
-# Run the setup wizard
-npm run setup
+# 2. Copy environment template
+cp .env.local.example .env.local
+
+# 3. Set up services (see detailed guide below)
+npx convex dev  # Creates Convex deployment
+
+# 4. Start development
+npm run dev
 ```
 
-The setup wizard will guide you through:
-- Environment configuration
-- WorkOS AuthKit setup
-- Convex backend configuration
-- GSD (Get Shit Done) installation for AI-assisted development
+Open [http://localhost:3000](http://localhost:3000) 🎉
 
-### Manual Setup
+**📖 Detailed Setup**: See [SETUP.md](SETUP.md) for step-by-step instructions with screenshots.
 
-If you prefer to set up manually:
+**🚀 Deployment**: See [DEPLOYMENT.md](DEPLOYMENT.md) for production deployment.
 
-1. Install dependencies:
+---
 
-   ```bash
-   npm install
-   ```
+## ⚡ Optional: Enable Paid Plans
 
-   > **Note:** After `npm install`, you'll be prompted to install GSD (Get Shit Done) - a meta-prompting system for AI-assisted development. This is optional but recommended.
-
-2. Set up your environment variables:
-
-   ```bash
-   cp .env.local.example .env.local
-   ```
-
-3. Configure WorkOS AuthKit:
-   - Create a [WorkOS account](https://workos.com/)
-   - Get your Client ID and API Key from the WorkOS dashboard
-   - In the WorkOS dashboard, add `http://localhost:3000/callback` as a redirect URI
-   - Generate a secure password for cookie encryption (minimum 32 characters)
-   - Update your `.env.local` file with these values
-
-4. Configure Convex:
-
-   ```bash
-   npx convex dev
-   ```
-
-   This will:
-   - Set up your Convex deployment
-   - Add your Convex URL to `.env.local`
-   - Open the Convex dashboard
-
-   Then set your WorkOS Client ID in Convex:
-
-   ```bash
-   npx convex env set WORKOS_CLIENT_ID <your_client_id>
-   ```
-
-   This allows Convex to validate JWT tokens from WorkOS
-
-5. Run the development server:
-
-   ```bash
-   npm run dev
-   ```
-
-   This starts both the Vite dev server (TanStack Start frontend) and Convex backend in parallel
-
-6. Open [http://localhost:3000](http://localhost:3000) to see your app
-
-## AI-Assisted Development
-
-This project is optimized for AI-assisted development with comprehensive documentation and tooling support for coding assistants like Claude Code and Cursor.
-
-### 📁 AI Developer Resources
-
-| Document | Purpose |
-|----------|---------|
-| **`LLM.txt`** | Quick context for any LLM - start here |
-| **`AGENTS.md`** | Comprehensive project documentation and patterns |
-| **`.cursor/rules/*.mdc`** | Contextual coding rules for Cursor IDE |
-| **`.cursor/example-prompts.md`** | Copy-paste prompts for common tasks |
-| **`docs/CONVEX_LLMS.md`** | Local copy of Convex LLM documentation |
-| **`.claude/skills/*/`** | Specialized skills for Claude Code |
-
-### 🤖 Claude Code Skills (Bundled & Ready)
-
-**All skills are pre-installed in `.claude/skills/`** - no setup required. Just use slash commands like `/convex`, `/ui-ux-pro-max`, or `/tanstack` in Claude Code.
-
-| Skill | Slash Command | Description |
-|-------|---------------|-------------|
-| `convex/` | `/convex` | Backend development patterns with Convex |
-| `tanstack/` | `/tanstack` | TanStack Start, Router, and Query patterns |
-| `tailwind-v4/` | `/tailwind-v4` | Tailwind CSS v4 styling and theming |
-| `shadcn-ui/` | `/shadcn-ui` | shadcn/ui component usage |
-| `astro-starlight/` | `/astro-starlight` | Documentation site development |
-| `ui-ux-pro-max/` | `/ui-ux-pro-max` | Complete design system generator with 50+ styles, 97 color palettes, 57 font pairings, 99 UX guidelines |
-
-**New in this release:** The **ui-ux-pro-max** skill (from [nextlevelbuilder/ui-ux-pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill)) is now bundled, giving you instant access to comprehensive design intelligence for building beautiful, accessible UIs.
-
-### 🎯 GSD (Get Shit Done)
-
-A meta-prompting system for spec-driven development:
+The app works great on the **free tier** (3 customers, 2 staff, 10 clients). To enable paid plans with Lemon Squeezy:
 
 ```bash
-npm run setup:gsd
-# Or manually: npx get-shit-done-cc@latest --claude --local
+# 1. Add to .env.local
+VITE_LEMONSQUEEZY_STORE_SLUG=your-store-slug
+VITE_LEMONSQUEEZY_PRO_VARIANT_ID=12345
+VITE_LEMONSQUEEZY_BUSINESS_VARIANT_ID=67890
+
+# 2. Set Convex environment variables
+npx convex env set LEMONSQUEEZY_API_KEY your_api_key
+npx convex env set LEMONSQUEEZY_WEBHOOK_SECRET your_webhook_secret
 ```
 
-| Command | Purpose |
-|---------|---------|
-| `/gsd:map-codebase` | Analyze existing code structure |
-| `/gsd:new-project` | Initialize spec-driven development |
-| `/gsd:plan-phase 1` | Create execution plans |
-| `/gsd:execute-phase 1` | Build features with fresh context |
-| `/gsd:verify-phase 1` | Verify implementation |
+See [SETUP.md](SETUP.md) for detailed billing configuration instructions.
 
-**Learn more**: [github.com/glittercowboy/get-shit-done](https://github.com/glittercowboy/get-shit-done)
+---
 
-## WorkOS AuthKit Setup
+## 📁 Project Structure
 
-This app uses WorkOS AuthKit for authentication. Key features:
+```
+├── src/
+│   ├── routes/              # TanStack Router file-based routes
+│   │   ├── index.tsx        # Landing page
+│   │   ├── onboarding.tsx   # Org creation flow
+│   │   ├── callback.tsx     # WorkOS OAuth callback
+│   │   └── _authenticated/  # Protected routes
+│   │       ├── dashboard.tsx
+│   │       ├── customers.tsx
+│   │       ├── team.tsx
+│   │       ├── billing.tsx
+│   │       └── settings.tsx
+│   ├── components/          # React components
+│   │   ├── ui/              # shadcn/ui components
+│   │   ├── layout/          # App layout components
+│   │   └── billing/         # Billing-specific components
+│   ├── config/              # Configuration files
+│   └── lib/                 # Utility functions
+│
+├── convex/                  # Convex backend
+│   ├── schema.ts            # Database schema
+│   ├── auth.config.ts       # WorkOS JWT validation
+│   ├── http.ts              # HTTP routes (webhooks)
+│   ├── orgs/                # Organization functions
+│   ├── customers/           # Customer CRUD
+│   ├── users/               # User management
+│   ├── invitations/         # Team invitations
+│   ├── assignments/         # Staff-customer assignments
+│   ├── billing/             # Billing queries & actions
+│   └── lemonsqueezy/        # Lemon Squeezy integration
+│
+├── docs/                    # Documentation site (Starlight)
+├── .cursor/                 # Cursor IDE rules
+├── .claude/                 # Claude Code skills
+└── .planning/               # Project planning docs
+```
 
-- **Redirect-based authentication**: Users are redirected to WorkOS for sign-in/sign-up
-- **Session management**: Automatic token refresh and session handling
-- **Route loader protection**: Protected routes use loaders to check authentication
-- **Client and server functions**: `useAuth()` for client components, `getAuth()` for server loaders
+---
 
-## Learn more
+## 🤖 AI-Assisted Development
 
-To learn more about developing your project with Convex, check out:
+iSaaSIT is optimized for AI-assisted development. Bundled tools include:
 
-- The [Tour of Convex](https://docs.convex.dev/get-started) for a thorough introduction to Convex principles.
-- The rest of [Convex docs](https://docs.convex.dev/) to learn about all Convex features.
-- [Stack](https://stack.convex.dev/) for in-depth articles on advanced topics.
+### Claude Code Skills
+All skills are pre-installed in `.claude/skills/`:
 
-## Join the community
+| Command | Skill |
+|---------|-------|
+| `/convex` | Backend patterns, queries, mutations |
+| `/tanstack` | Routing, server functions, data fetching |
+| `/tailwind-v4` | Styling with Tailwind CSS v4 |
+| `/shadcn-ui` | Component usage and composition |
+| `/ui-ux-pro-max` | Design system generator (50+ styles, 97 palettes) |
 
-Join thousands of developers building full-stack apps with Convex:
+### GSD (Get Shit Done)
+Meta-prompting system for spec-driven development:
 
-- Join the [Convex Discord community](https://convex.dev/community) to get help in real-time.
-- Follow [Convex on GitHub](https://github.com/get-convex/), star and contribute to the open-source implementation of Convex.
+```bash
+# Already installed via npm install
+/gsd:map-codebase     # Analyze codebase
+/gsd:new-project      # Initialize spec-driven dev
+/gsd:plan-phase 1     # Create execution plan
+```
+
+### Cursor Rules
+Contextual rules in `.cursor/rules/`:
+- Convex patterns
+- TanStack Router conventions
+- Authentication patterns
+- Multi-tenancy guidelines
+
+---
+
+## 🚀 Deployment
+
+### Deploy to Netlify
+
+```bash
+# Build for production
+npm run build
+
+# Deploy Convex
+npx convex deploy
+```
+
+Add environment variables in Netlify dashboard:
+- `WORKOS_CLIENT_ID`
+- `WORKOS_API_KEY`
+- `WORKOS_COOKIE_PASSWORD`
+- `WORKOS_REDIRECT_URI` (your production URL)
+- `VITE_CONVEX_URL`
+
+### Update WorkOS Redirect URI
+
+In WorkOS dashboard, add your production callback URL:
+```
+https://your-domain.com/callback
+```
+
+### Configure WorkOS Webhook (Invitations)
+
+Invited users won’t be attached to an organization until the WorkOS webhook is delivered to Convex.
+
+1. In the WorkOS Dashboard, add a webhook endpoint:
+   - **Dev**: `https://<your-deployment>.convex.site/webhooks/workos`
+   - **Prod**: `https://<your-prod-deployment>.convex.site/webhooks/workos`
+2. Enable the `invitation.accepted` event.
+3. Set the webhook secret in Convex:
+   ```bash
+   npx convex env set WORKOS_WEBHOOK_SECRET <secret>
+   ```
+4. Find your deployment URL in the Convex dashboard or the output of `npx convex dev`.
+
+---
+
+## 🗺️ Roadmap
+
+### v1.0 (Current) ✅
+- [x] Authentication & org management
+- [x] Customer CRUD with data isolation
+- [x] Team invitations (Staff/Client roles)
+- [x] Staff-customer assignments
+- [x] Usage-based billing with Lemon Squeezy
+- [x] Dashboard & settings
+- [x] Client-specific dashboard view
+
+- [ ] Activity logs
+- [ ] File uploads (Convex File Storage)
+- [ ] Email templates
+- [ ] API keys for customer integrations
+
+### v2.0 (Planned)
+- [ ] Admin console for platform management
+- [ ] Webhook management
+- [ ] Advanced reporting
+- [ ] Custom fields for customers
+
+---
+
+## 🐛 Troubleshooting
+
+### "Missing VITE_CONVEX_URL"
+Run `npx convex dev` to set up Convex and get your deployment URL.
+
+### "Authentication failed" / JWT errors
+1. Ensure `WORKOS_CLIENT_ID` is set in both `.env.local` and Convex dashboard
+2. Check that your redirect URI matches exactly (including http vs https)
+
+### "Billing not configured" warning
+This is expected if you haven't set up Lemon Squeezy. The app works fully on the free tier without billing configured.
+
+### setup:check Tool
+Run `npm run setup:check` to automatically validate your environment variables and configuration.
+
+### npm install fails
+Try with `--legacy-peer-deps`:
+```bash
+npm install --legacy-peer-deps
+```
+
+---
+
+## 📄 License
+
+MIT © [Kieran Saunders](https://github.com/Kieransaunders)
+
+---
+
+## 💬 Community
+
+- **Issues**: [GitHub Issues](https://github.com/Kieransaunders/iSaaSIT/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/Kieransaunders/iSaaSIT/discussions)
+
+---
+
+<p align="center">
+  Built with ❤️ for agencies who ship.
+</p>

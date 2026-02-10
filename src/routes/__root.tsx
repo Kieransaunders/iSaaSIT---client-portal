@@ -10,6 +10,7 @@ import type { ReactNode } from 'react';
 import type { ConvexReactClient } from 'convex/react';
 import type { ConvexQueryClient } from '@convex-dev/react-query';
 import { ThemeProvider } from '@/components/providers/theme-provider';
+import { Toaster } from '@/components/ui/sonner';
 
 const fetchWorkosAuth = createServerFn({ method: 'GET' }).handler(async () => {
   try {
@@ -116,6 +117,7 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
       </head>
       <body className="min-h-screen bg-background font-sans antialiased">
         {children}
+        <Toaster position="top-right" richColors />
         <Scripts />
       </body>
     </html>

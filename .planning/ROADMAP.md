@@ -1,28 +1,27 @@
 # Roadmap: iSaaSIT v1 Completion
 
-**Created:** 2025-02-04
-**Phases:** 3
-**Requirements:** 9 pending (16 already complete)
+**Created:** 2025-02-04  
+**Last Updated:** 2026-02-10  
+**Current Focus:** Phase 3 In Progress — Billing + v1 ship blockers  
+**Overall Progress:** 24/32 requirements complete (75%)
 
 ## Overview
 
-| Phase | Name | Goal | Requirements |
-|-------|------|------|--------------|
-| 1 | WorkOS Integration ✓ | Real org creation with WorkOS API | ORG-03, ORG-04 |
-| 2 | Team Management | Invite users and manage assignments | TEAM-01 to TEAM-06, ASSIGN-02 to ASSIGN-04 |
-| 3 | Billing | Lemon Squeezy subscription integration | BILL-01 to BILL-06 |
+| Phase | Name | Goal | Status | Progress |
+|-------|------|------|--------|----------|
+| 1 | WorkOS Integration ✓ | Real org creation with WorkOS API | ✓ Complete | 100% |
+| 2 | Team Management | Invite users and manage assignments | In Progress | 80% |
+| 3 | Billing | Lemon Squeezy subscription integration | In Progress | 40% |
 
 ---
 
 ## Phase 1: WorkOS Integration ✓
 
-**Goal:** Replace mock org ID with real WorkOS API calls
-**Status:** Complete (2026-02-09)
-**Verified:** 12/12 must-haves passed
+**Goal:** Replace mock org ID with real WorkOS API calls  
+**Status:** ✓ Complete (2026-02-09)  
+**Verified:** 12/12 must-haves passed  
 
-**Plans:** 3 plans
-
-Plans:
+**Plans:** 3 plans (3 complete)
 - [x] 01-01-PLAN.md - WorkOS SDK setup + org creation action
 - [x] 01-02-PLAN.md - Onboarding flow with billing email
 - [x] 01-03-PLAN.md - Settings page with live org data
@@ -31,32 +30,18 @@ Plans:
 - ORG-03: Org creation calls WorkOS API (not mock ID)
 - ORG-04: User can view org settings
 
-**Success Criteria:**
-1. User creates org → WorkOS org created with matching name
-2. Org ID in Convex matches WorkOS org ID
-3. Settings page shows org name from WorkOS
-4. Org name can be updated (syncs to WorkOS)
-
-**Dependencies:** None (foundation for Phase 2)
-
-**Notes:**
-- WorkOS API requires server-side call (Convex action)
-- Need WorkOS API key in environment
-- Consider org settings: name, billing email, logo
-
 ---
 
-## Phase 2: Team Management
+## Phase 2: Team Management (In Progress)
 
-**Goal:** Users can invite staff/clients and manage customer assignments
+**Goal:** Users can invite staff/clients and manage customer assignments  
+**Status:** 4 of 5 plans complete (80%)
 
 **Plans:** 5 plans
-
-Plans:
-- [ ] 02-01-PLAN.md — Schema + invitation backend (send, revoke, resend)
-- [ ] 02-02-PLAN.md — Staff assignment backend + customer detail UI
-- [ ] 02-03-PLAN.md — Webhook handler + user management backend
-- [ ] 02-04-PLAN.md — Team page UI (tabs, invite dialog, member table)
+- [x] 02-01-PLAN.md — Schema + invitation backend (send, revoke, resend)
+- [x] 02-02-PLAN.md — Staff assignment backend + customer detail UI
+- [x] 02-03-PLAN.md — Webhook handler + user management backend
+- [x] 02-04-PLAN.md — Team page UI (tabs, invite dialog, member table)
 - [ ] 02-05-PLAN.md — End-to-end verification checkpoint
 
 **Requirements:**
@@ -70,33 +55,16 @@ Plans:
 - ASSIGN-03: Admin can unassign staff from customers
 - ASSIGN-04: Staff assignment UI in customer detail
 
-**Success Criteria:**
-1. Admin invites staff@example.com → email received with invite link
-2. Staff clicks link → signs up via WorkOS → lands in org with staff role
-3. Admin invites client for "Acme Corp" → client sees only Acme data
-4. Team page lists all org members with roles
-5. Customer detail page shows assigned staff
-6. Admin can add/remove staff assignments
-
-**Dependencies:** Phase 1 (WorkOS API integration)
-
-**Notes:**
-- WorkOS has invitation API
-- Need Resend setup for invite emails (or use WorkOS email)
-- Staff assignment stored in staffCustomerAssignments table (exists)
-- Consider bulk assignment UI
-
 ---
 
-## Phase 3: Billing
+## Phase 3: Billing (In Progress)
 
-**Goal:** Working Lemon Squeezy subscriptions with usage cap enforcement
+**Goal:** Working Lemon Squeezy subscriptions with usage cap enforcement  
+**Status:** 2 of 6 plans complete (40%)
 
 **Plans:** 6 plans
-
-Plans:
-- [ ] 03-01-PLAN.md — Webhook handler + signature verification + subscription sync
-- [ ] 03-02-PLAN.md — Checkout action + cancel action + billing usage queries
+- [x] 03-01-PLAN.md — Webhook handler + signature verification + subscription sync
+- [x] 03-02-PLAN.md — Checkout action + cancel action + billing usage queries
 - [ ] 03-03-PLAN.md — Billing page UI with real data + checkout overlay
 - [ ] 03-04-PLAN.md — Cap enforcement UX + warning banners + inline upgrade prompts
 - [ ] 03-05-PLAN.md — End-to-end verification checkpoint
@@ -110,34 +78,32 @@ Plans:
 - BILL-05: Usage cap enforced on staff/client creation
 - BILL-06: Billing page shows real usage from Convex
 
-**Success Criteria:**
-1. Admin clicks "Upgrade" → Lemon Squeezy checkout overlay opens
-2. After payment → org subscription status = "active"
-3. Plan caps (maxCustomers, maxStaff, maxClients) updated from plan
-4. Billing page shows real counts vs limits with color-coded progress bars
-5. Creating staff/client blocked when at limit with upgrade prompt
-6. Subscription cancelled → status updates via webhook
+---
 
-**Dependencies:** Phase 2 (users exist to count against caps)
+## Recent Activity
 
-**Notes:**
-- Lemon Squeezy webhook at Convex HTTP endpoint /lemonsqueezy/webhook
-- Webhook signature verification with Web Crypto API (HMAC-SHA256)
-- Plan limits hardcoded in variant ID mapping (LS doesn't support variant metadata)
-- Checkout overlay embedded in-app via Lemon.js CDN
-- Test with Lemon Squeezy test mode first
+- **2026-02-09:** Plan 03-02 complete — Billing backend operations (usage queries, checkout URL, subscription cancellation)
+- **2026-02-09:** Plan 03-01 complete — Lemon Squeezy webhook handler and subscription sync
+- **2026-02-09:** Plan 02-04 complete — Team management UI with tabbed interface, invite dialog, member/invitation tables
+- **2026-02-09:** Plan 02-03 complete — WorkOS webhook handler (invitation.accepted) + user management backend (remove/restore/list)
+- **2026-02-09:** Plan 02-02 complete — Staff assignment mutations/queries + customer detail assignment UI
 
 ---
 
-## Milestone Completion Criteria
+## Ship Blockers (as of 2026-02-10)
 
-v1 is complete when:
-- [ ] All 25 requirements have status "Complete"
-- [ ] Org creation uses real WorkOS API
-- [ ] Staff and clients can be invited and see appropriate data
-- [ ] Billing integrates with Lemon Squeezy
-- [ ] Usage caps enforced across all entity types
-- [ ] README updated with setup instructions
+- Fix Lemon Squeezy plan mapping to use real variant IDs (`convex/lemonsqueezy/plans.ts`)
+- Enforce admin role on org settings updates (`convex/workos/updateOrg.ts`)
+- Add role-based access checks to staff assignment queries (prevent staff/client from listing arbitrary assignments)
+- Handle customer deletion with client users/invites (block or cascade cleanup)
+- Enforce org onboarding redirect in `src/routes/_authenticated.tsx`
+- Clarify restore-user behavior (reinvite vs restore), adjust UI accordingly
+- Configure WorkOS webhook endpoint and `WORKOS_WEBHOOK_SECRET`
+- Configure Lemon Squeezy webhook endpoint and environment variables
+- Add CapReachedBanner to invite flow
+- Update docs to reflect billing is implemented and required Convex env vars
+- Run v1 smoke test checklist and update requirement statuses
 
 ---
 *Roadmap created: 2025-02-04*
+*Last updated: 2026-02-10*

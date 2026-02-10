@@ -318,6 +318,45 @@ export const deleteCustomer = mutation({
       throw new ConvexError("Access denied");
     }
 
+    const clientUsers = await ctx.db
+      .query("users")
+      .withIndex("by_customer", (q) => q.eq("customerId", args.customerId))
+      .collect();
+
+    const activeClientUsers = clientUsers.filter(
+      (clientUser) => clientUser.role === "client" && !clientUser.deletedAt
+    );
+
+    const pendingInvitations = await ctx.db
+      .query("pendingInvitations")
+      .withIndex("by_org", (q) => q.eq("orgId", userRecord.orgId))
+      .collect();
+
+    const pendingClientInvitations = pendingInvitations.filter(
+      (invitation) =>
+        invitation.role === "client" && invitation.customerId === args.customerId
+    );
+
+    if (activeClientUsers.length > 0 || pendingClientInvitations.length > 0) {
+      const parts: string[] = [];
+
+      if (activeClientUsers.length > 0) {
+        parts.push(
+          `${activeClientUsers.length} active client user${activeClientUsers.length === 1 ? "" : "s"}`
+        );
+      }
+
+      if (pendingClientInvitations.length > 0) {
+        parts.push(
+          `${pendingClientInvitations.length} pending client invitation${pendingClientInvitations.length === 1 ? "" : "s"}`
+        );
+      }
+
+      throw new ConvexError(
+        `Cannot delete customer while it has ${parts.join(" and ")}. Remove or reassign them first.`
+      );
+    }
+
     // Delete the customer
     await ctx.db.delete("customers", args.customerId);
 

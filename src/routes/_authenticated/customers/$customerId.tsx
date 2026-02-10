@@ -3,6 +3,7 @@ import { useMutation, useQuery } from 'convex/react';
 import { ArrowLeft, Building2, Calendar, FileText, Loader2, Mail, Save, UserPlus, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 import { api } from '../../../../convex/_generated/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -29,8 +30,14 @@ function CustomerDetailPage() {
   const isAdmin = userInfo?.role === 'admin';
 
   // Staff assignment queries and mutations
-  const assignedStaff = useQuery(api.assignments.queries.listAssignedStaff, { customerId: customerId as any });
-  const availableStaff = useQuery(api.assignments.queries.listAvailableStaff, { customerId: customerId as any });
+  const assignedStaff = useQuery(
+    api.assignments.queries.listAssignedStaff,
+    isAdmin ? { customerId: customerId as any } : 'skip',
+  );
+  const availableStaff = useQuery(
+    api.assignments.queries.listAvailableStaff,
+    isAdmin ? { customerId: customerId as any } : 'skip',
+  );
   const assignStaffMutation = useMutation(api.assignments.mutations.assignStaff);
   const unassignStaffMutation = useMutation(api.assignments.mutations.unassignStaff);
 
@@ -65,6 +72,9 @@ function CustomerDetailPage() {
         notes: formData.notes || undefined,
       });
       setIsEditing(false);
+      toast.success('Customer updated successfully');
+    } catch (error) {
+      toast.error('Failed to update customer. Please try again.');
     } finally {
       setIsSaving(false);
     }
@@ -76,8 +86,9 @@ function CustomerDetailPage() {
         customerId: customerId as any,
         userId: staffUserId as any,
       });
+      toast.success('Staff assigned successfully');
     } catch (error) {
-      console.error('Failed to assign staff:', error);
+      toast.error('Failed to assign staff. Please try again.');
     }
   };
 
@@ -87,10 +98,38 @@ function CustomerDetailPage() {
         customerId: customerId as any,
         userId: staffUserId as any,
       });
+      toast.success('Staff unassigned successfully');
     } catch (error) {
-      console.error('Failed to unassign staff:', error);
+      toast.error('Failed to unassign staff. Please try again.');
     }
   };
+
+  if (userInfo === undefined) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!userInfo.hasOrg) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
+        <p>You&apos;re not assigned to an organization yet.</p>
+      </div>
+    );
+  }
+
+  if (userInfo.role === 'client') {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
+        <p>Customer details are only available to staff and admins.</p>
+        <Button onClick={() => navigate({ to: '/dashboard' })} className="mt-4">
+          Back to Dashboard
+        </Button>
+      </div>
+    );
+  }
 
   if (customer === undefined) {
     return (

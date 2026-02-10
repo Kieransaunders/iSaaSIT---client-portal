@@ -1,5 +1,5 @@
 import { AppSidebar } from "./app-sidebar";
-import type {ReactNode} from "react";
+import type { ReactNode } from "react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -14,6 +14,13 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { ImpersonationBanner } from "./impersonation-banner";
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -25,12 +32,26 @@ interface MainLayoutProps {
 
 export function MainLayout({ children, breadcrumbs }: MainLayoutProps) {
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
+    <TooltipProvider>
+      <SidebarProvider>
+        {/* Skip to content link for accessibility */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:top-4 focus:left-4"
+        >
+          Skip to main content
+        </a>
+        <AppSidebar />
+        <SidebarInset id="main-content">
+        <ImpersonationBanner />
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
           <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <SidebarTrigger className="-ml-1 hover:bg-accent" />
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Toggle sidebar</TooltipContent>
+            </Tooltip>
             <Separator orientation="vertical" className="mr-2 h-4" />
             {breadcrumbs && breadcrumbs.length > 0 && (
               <Breadcrumb>
@@ -64,5 +85,6 @@ export function MainLayout({ children, breadcrumbs }: MainLayoutProps) {
         <main className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</main>
       </SidebarInset>
     </SidebarProvider>
+  </TooltipProvider>
   );
 }

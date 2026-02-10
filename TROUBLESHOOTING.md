@@ -181,6 +181,25 @@ export const fastQuery = query({
 
 ## Authentication Errors
 
+### Invited users are asked to create an organization
+
+**Cause**: WorkOS invitation webhook isn’t reaching Convex, so the user never gets `orgId` assigned in Convex.
+
+**Solution**:
+1. In the WorkOS Dashboard, add a webhook endpoint that points to your Convex HTTP action:
+   - **Dev**: `https://<your-deployment>.convex.site/webhooks/workos`
+   - **Prod**: `https://<your-prod-deployment>.convex.site/webhooks/workos`
+2. Enable the `invitation.accepted` event for that webhook.
+3. Set the webhook secret in Convex (not just `.env.local`):
+   ```bash
+   npx convex env set WORKOS_WEBHOOK_SECRET <secret>
+   ```
+4. Retry the invite flow after the webhook is configured.
+
+**Notes**:
+- The handler lives in `convex/webhooks/workos.ts` and is mounted in `convex/http.ts`.
+- Without the webhook, invited users will look like “no org” and be redirected to onboarding.
+
 ### "No authenticated user" despite being logged in
 
 **Cause**: Convex auth context not properly set up.

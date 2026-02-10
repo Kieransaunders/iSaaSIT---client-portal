@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAction, useQuery } from 'convex/react';
 import { AlertCircle, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { api } from '../../../convex/_generated/api';
 import type { Id } from '../../../convex/_generated/dataModel';
 import {
@@ -46,6 +47,32 @@ export function InviteDialog({ open, onOpenChange }: InviteDialogProps) {
     setIsSubmitting(false);
   };
 
+  const mapInviteError = (message: string) => {
+    const cleaned = message.replace(/^Failed to send invitation:\s*/i, '').trim();
+
+    if (cleaned.includes('Staff limit reached')) {
+      return 'You have reached your staff limit. Upgrade your plan to invite more staff members.';
+    }
+
+    if (cleaned.includes('Client limit reached')) {
+      return 'You have reached your client limit. Upgrade your plan to invite more clients.';
+    }
+
+    if (cleaned.includes('Customer ID required')) {
+      return 'Please select a customer for a client invitation.';
+    }
+
+    if (cleaned.toLowerCase().includes('already a member')) {
+      return 'That user is already a member of this organization.';
+    }
+
+    if (cleaned.toLowerCase().includes('invitation is already pending')) {
+      return 'An invitation is already pending for that email.';
+    }
+
+    return cleaned || 'Failed to send invitation. Please try again.';
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -76,7 +103,9 @@ export function InviteDialog({ open, onOpenChange }: InviteDialogProps) {
       resetForm();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to send invitation';
-      setError(message);
+      const mappedError = mapInviteError(message);
+      setError(mappedError);
+      toast.error(mappedError);
     } finally {
       setIsSubmitting(false);
     }

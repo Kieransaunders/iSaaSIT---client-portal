@@ -98,29 +98,27 @@ export function UsageWarningBanner({ usage }: UsageWarningBannerProps) {
     return null;
   }
 
+  const resourceSummary = warningResources
+    .map((resource) => `${resource.name}: ${resource.count}/${resource.max}`)
+    .join(", ");
+
   return (
     <Alert className="border-amber-500 bg-amber-50 dark:bg-amber-950/20 mb-6">
-      <div className="flex items-start gap-3">
+      <div className="flex flex-col sm:flex-row items-start gap-3">
         <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-500 flex-shrink-0" />
-        <div className="flex-1">
-          <AlertDescription className="text-amber-900 dark:text-amber-100">
-            <span className="font-medium">
-              You&apos;re approaching your plan limits.{" "}
-            </span>
-            {warningResources.map((resource, index) => (
-              <span key={resource.name}>
-                {index > 0 && ", "}
-                {resource.name}: {resource.count}/{resource.max}
-              </span>
-            ))}
-            .{" "}
-            <Link to="/billing" className="underline font-medium">
-              Upgrade
-            </Link>{" "}
-            to increase your limits.
+        <div className="flex-1 min-w-0">
+          <AlertDescription className="block text-amber-900 dark:text-amber-100">
+            <p className="text-sm">
+              <span className="font-medium">You&apos;re approaching your plan limits.</span>{" "}
+              {resourceSummary}.{" "}
+              <Link to="/billing" className="underline font-medium">
+                Upgrade
+              </Link>{" "}
+              to increase your limits.
+            </p>
           </AlertDescription>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0 sm:ml-auto">
           <Link to="/billing">
             <Button size="sm" variant="default">
               Upgrade

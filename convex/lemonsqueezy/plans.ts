@@ -1,12 +1,11 @@
 /**
  * Lemon Squeezy Plan Tier Configuration
  *
- * Maps variant IDs to plan limits for subscription tiers.
+ * This file defines plan limits. Variant IDs are passed from the frontend
+ * via environment variables (VITE_LEMONSQUEEZY_*_VARIANT_ID).
  *
- * SETUP REQUIRED: Replace placeholder variant IDs with actual values from your
- * Lemon Squeezy dashboard after creating your products/variants.
- *
- * Location: Lemon Squeezy Dashboard -> Products -> [Your Product] -> Variants
+ * The variant ID is stored on the org when a subscription is created,
+ * and we look up plan limits based on that stored variant ID.
  */
 
 export const FREE_TIER_LIMITS = {
@@ -16,13 +15,21 @@ export const FREE_TIER_LIMITS = {
 } as const;
 
 /**
- * Plan tier definitions with variant ID mappings
- *
- * TODO: Update variant IDs after creating products in Lemon Squeezy dashboard
+ * Plan tier definitions.
+ * Keys should match the variant IDs you configure in your environment.
  */
-export const PLAN_TIERS = {
+export const PLAN_TIERS: Record<
+  string,
+  {
+    name: string;
+    maxCustomers: number;
+    maxStaff: number;
+    maxClients: number;
+  }
+> = {
   // Pro Plan - Small agencies
-  "VARIANT_PRO": {
+  // Configure via VITE_LEMONSQUEEZY_PRO_VARIANT_ID in your .env.local
+  pro: {
     name: "Pro",
     maxCustomers: 25,
     maxStaff: 10,
@@ -30,13 +37,14 @@ export const PLAN_TIERS = {
   },
 
   // Business Plan - Growing agencies
-  "VARIANT_BUSINESS": {
+  // Configure via VITE_LEMONSQUEEZY_BUSINESS_VARIANT_ID in your .env.local
+  business: {
     name: "Business",
     maxCustomers: 100,
     maxStaff: 50,
     maxClients: 500,
   },
-} as const;
+};
 
 /**
  * Get plan limits for a given Lemon Squeezy variant ID
@@ -44,12 +52,16 @@ export const PLAN_TIERS = {
  * @param variantId - Lemon Squeezy variant ID from subscription data
  * @returns Plan limits object (defaults to FREE_TIER_LIMITS for unknown variants)
  */
-export function getLimitsForVariant(variantId: string): {
+export function getLimitsForVariant(variantId: string | undefined): {
   maxCustomers: number;
   maxStaff: number;
   maxClients: number;
 } {
-  const plan = PLAN_TIERS[variantId as keyof typeof PLAN_TIERS];
+  if (!variantId) {
+    return FREE_TIER_LIMITS;
+  }
+
+  const plan = PLAN_TIERS[variantId];
 
   if (!plan) {
     // Unknown variant ID - default to free tier
@@ -74,6 +86,6 @@ export function getPlanName(variantId: string | undefined): string {
     return "Free";
   }
 
-  const plan = PLAN_TIERS[variantId as keyof typeof PLAN_TIERS];
+  const plan = PLAN_TIERS[variantId];
   return plan?.name ?? "Free";
 }

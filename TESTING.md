@@ -14,7 +14,7 @@ Testing patterns and strategies for iSaaSIT.
 
 ## Testing Philosophy
 
-iSaaSIT currently has **no automated test suite**. This is intentional for a starter template - we prioritize:
+iSaaSIT includes a **minimal Playwright smoke suite** for critical flows, and still prioritizes:
 
 1. **Manual testing** during development
 2. **TypeScript** for compile-time safety
@@ -23,7 +23,7 @@ iSaaSIT currently has **no automated test suite**. This is intentional for a sta
 As your project matures, consider adding:
 - Unit tests for utilities
 - Integration tests for Convex functions
-- E2E tests for critical user flows
+- Expanded E2E coverage for critical user flows
 
 ---
 
@@ -114,13 +114,46 @@ test("create customer", async (ctx) => {
 
 ## E2E Testing
 
-### Playwright Setup (Recommended)
+### Playwright Smoke Suite (Included)
 
-When ready to add E2E tests:
+The repo ships with a small E2E suite in `e2e/smoke.spec.ts` that covers:
+- Sign-in link validity
+- Org creation (if needed)
+- Customer CRUD
+
+**Setup**
 
 ```bash
-npm init playwright@latest
+# Install deps (adds @playwright/test to devDependencies)
+npm install
+
+# Install browsers
+npx playwright install
+
+# Start app + Convex
+npm run dev
 ```
+
+**Create an authenticated storage state**
+
+```bash
+# Opens a browser so you can sign in once; saves storage state
+npx playwright codegen --save-storage=playwright/.auth/user.json http://localhost:3000
+```
+
+If the storage state file is missing, authenticated smoke tests will be skipped.
+For the RBAC smoke test, create a staff user and save storage to `playwright/.auth/staff.json`.
+
+**Run the smoke suite**
+
+```bash
+npm run test:e2e
+```
+
+**Environment overrides**
+- `PLAYWRIGHT_BASE_URL` to point at a non-default app URL
+- `PLAYWRIGHT_STORAGE_STATE` to use a different auth state file
+- `PLAYWRIGHT_STORAGE_STATE_STAFF` to run the staff RBAC smoke test with a non-admin user
 
 Example test:
 

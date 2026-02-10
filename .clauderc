@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "convex": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "convex",
+        "mcp",
+        "start"
+      ],
+      "description": "Convex MCP server for database introspection and function execution"
+    }
+  }
+}

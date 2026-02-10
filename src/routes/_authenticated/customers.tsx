@@ -51,6 +51,9 @@ function CustomersPage() {
   // Fetch data
   const customers = useQuery(api.customers.crud.listCustomers);
   const usage = useQuery(api.customers.crud.getCustomerUsage);
+  const hasOrgCheck = useQuery(api.orgs.get.hasOrg);
+  const userRole = hasOrgCheck?.role;
+  const isAdmin = userRole === 'admin';
 
   // Mutations
   const createCustomer = useMutation(api.customers.crud.createCustomer);
@@ -77,7 +80,37 @@ function CustomersPage() {
     setCustomerToDelete(null);
   };
 
-  const isLoading = customers === undefined || usage === undefined;
+  const isLoading = customers === undefined || usage === undefined || hasOrgCheck === undefined;
+
+  if (hasOrgCheck === undefined) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!hasOrgCheck.hasOrg) {
+    return (
+      <Alert className="border-amber-500 bg-amber-50 dark:bg-amber-950/20">
+        <AlertCircle className="h-4 w-4 text-amber-600" />
+        <AlertDescription className="text-amber-900 dark:text-amber-100">
+          You&apos;re not assigned to an organization yet. Ask an admin to invite you or complete onboarding.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  if (userRole === 'client') {
+    return (
+      <Alert className="border-amber-500 bg-amber-50 dark:bg-amber-950/20">
+        <AlertCircle className="h-4 w-4 text-amber-600" />
+        <AlertDescription className="text-amber-900 dark:text-amber-100">
+          Customers are only available to staff and admins.
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -129,7 +162,7 @@ function CustomersPage() {
                 )}
               </div>
             </div>
-            {usage.atLimit && (
+            {usage.atLimit && isAdmin && (
               <Alert variant="destructive" className="mt-4">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
@@ -138,6 +171,14 @@ function CustomersPage() {
                     Upgrade your plan
                   </a>{' '}
                   to add more customers.
+                </AlertDescription>
+              </Alert>
+            )}
+            {usage.atLimit && !isAdmin && (
+              <Alert variant="destructive" className="mt-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  You&apos;ve reached your customer limit. Contact an admin to upgrade the plan.
                 </AlertDescription>
               </Alert>
             )}
@@ -233,13 +274,15 @@ function CustomersPage() {
                         <Edit className="mr-2 h-4 w-4" />
                         View Details
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="text-destructive"
-                        onClick={() => setCustomerToDelete(customer._id)}
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete
-                      </DropdownMenuItem>
+                      {isAdmin && (
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={() => setCustomerToDelete(customer._id)}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>

@@ -9,6 +9,7 @@ import {
   Settings,
   UserCircle,
   Users,
+  Wrench,
 } from "lucide-react";
 import { useAuth } from "@workos/authkit-tanstack-react-start/client";
 import { api } from "../../../convex/_generated/api";
@@ -41,16 +42,19 @@ const mainNavItems = [
     title: "Dashboard",
     url: "/dashboard",
     icon: LayoutDashboard,
+    roles: ["admin", "staff", "client"], // Available to all roles
   },
   {
     title: "Customers",
     url: "/customers",
     icon: Building2,
+    roles: ["admin", "staff"], // Hidden from clients
   },
   {
     title: "Team",
     url: "/team",
     icon: Users,
+    roles: ["admin"], // Admin only
   },
 ];
 
@@ -59,33 +63,68 @@ const adminNavItems = [
     title: "Billing",
     url: "/billing",
     icon: CreditCard,
+    roles: ["admin"], // Admin only
   },
   {
     title: "Settings",
     url: "/settings",
     icon: Settings,
+    roles: ["admin"], // Admin only
   },
 ];
 
 const resourceNavItems = [
   {
+    title: "Tools",
+    url: "/tools",
+    icon: Wrench,
+    roles: ["admin"],
+  },
+  {
     title: "Documentation",
     url: DOCS_URL,
     icon: BookOpen,
     external: true,
+    roles: ["admin", "staff"],
   },
   {
     title: "Blog",
     url: BLOG_URL,
     icon: BookOpen,
     external: true,
+    roles: ["admin", "staff"],
   },
 ];
+
+type NavItem = {
+  title: string;
+  url: string;
+  icon: any;
+  roles?: string[];
+  external?: boolean;
+};
+
+/**
+ * Filter navigation items based on user role
+ */
+function filterNavByRole(items: NavItem[], userRole?: string): NavItem[] {
+  if (!userRole) return [];
+  return items.filter((item) => !item.roles || item.roles.includes(userRole));
+}
 
 export function AppSidebar() {
   const location = useLocation();
   const { signOut, user } = useAuth();
   const org = useQuery(api.orgs.get.getMyOrg);
+  const userInfo = useQuery(api.orgs.get.hasOrg);
+
+  // Get user role, default to 'client' if not set
+  const userRole = userInfo?.role || "client";
+
+  // Filter navigation items based on role
+  const filteredMainNav = filterNavByRole(mainNavItems, userRole);
+  const filteredAdminNav = filterNavByRole(adminNavItems, userRole);
+  const filteredResourceNav = filterNavByRole(resourceNavItems, userRole);
 
   const getInitials = (name?: string | null, email?: string) => {
     if (name) {
@@ -104,7 +143,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="none">
+    <Sidebar collapsible="icon" variant="inset">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -126,74 +165,91 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Platform</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {mainNavItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActiveRoute(item.url)}
-                    tooltip={item.title}
-                  >
-                    <Link to={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Administration</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {adminNavItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActiveRoute(item.url)}
-                    tooltip={item.title}
-                  >
-                    <Link to={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Resources</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {resourceNavItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    tooltip={item.title}
-                  >
-                    <a 
-                      href={item.url} 
-                      target={item.external ? "_blank" : undefined}
-                      rel={item.external ? "noreferrer" : undefined}
+        {/* Platform Navigation - Show only if there are items */}
+        {filteredMainNav.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Platform</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {filteredMainNav.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActiveRoute(item.url)}
+                      tooltip={item.title}
                     >
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+                      <Link to={item.url}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {/* Administration Navigation - Show only if there are items */}
+        {filteredAdminNav.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Administration</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {filteredAdminNav.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActiveRoute(item.url)}
+                      tooltip={item.title}
+                    >
+                      <Link to={item.url}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {/* Resources - Show only if there are items */}
+        {filteredResourceNav.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Resources</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {filteredResourceNav.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      tooltip={item.title}
+                      isActive={!item.external && isActiveRoute(item.url)}
+                    >
+                      {item.external ? (
+                        <a
+                          href={item.url}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          <item.icon />
+                          <span>{item.title}</span>
+                        </a>
+                      ) : (
+                        <Link to={item.url}>
+                          <item.icon />
+                          <span>{item.title}</span>
+                        </Link>
+                      )}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter>
@@ -212,8 +268,8 @@ export function AppSidebar() {
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-semibold">
-                      {user?.firstName && user?.lastName 
-                        ? `${user.firstName} ${user.lastName}` 
+                      {user?.firstName && user?.lastName
+                        ? `${user.firstName} ${user.lastName}`
                         : user?.firstName || user?.email}
                     </span>
                     <span className="truncate text-xs text-muted-foreground">

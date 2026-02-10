@@ -1,0 +1,117 @@
+---
+title: User Impersonation
+description: Testing and debugging with the "Act As" feature
+---
+
+The User Impersonation feature allows **Admin** users to view the application as another user, making it easy to test role-based access, debug issues, and verify user experiences.
+
+## Overview
+
+Impersonation lets you:
+
+- **Test user experiences** - See exactly what a Staff or Client user sees
+- **Debug permission issues** - Verify RBAC is working correctly
+- **Support users** - Reproduce issues reported by specific users
+- **Validate data isolation** - Confirm users only see their allowed data
+
+:::note
+Only **Admin** users can impersonate other users. You cannot impersonate users from other organizations or yourself.
+:::
+
+## How to Use
+
+### Start Impersonating
+
+1. Navigate to **Team** in the sidebar menu (`/team`)
+2. Find the user you want to impersonate in the team members table
+3. Click the **"Act As"** button (user check icon) in the Actions column
+4. The page will reload and you'll be viewing the app as that user
+
+### During Impersonation
+
+When impersonating a user, a **banner appears at the top** of the page showing:
+
+- The name and email of the user you're viewing as
+- Their role (Admin, Staff, or Client)
+- A **"Stop Impersonating"** button to return to your own account
+
+### Stop Impersonating
+
+To exit impersonation mode:
+
+1. Click the **"Stop Impersonating"** button in the banner
+2. The page will reload and you'll be back to your own account
+
+## Technical Implementation
+
+### Convex Mutations
+
+The impersonation system uses three Convex functions:
+
+```typescript
+// Start impersonating a user
+await startImpersonating({ targetUserId: userId });
+
+// Stop impersonating
+await stopImpersonating();
+
+// Check if currently impersonating
+const targetUser = await getImpersonationStatus();
+```
+
+### Security
+
+The impersonation system enforces several security measures:
+
+| Check | Description |
+|-------|-------------|
+| **Admin only** | Only users with `role === 'admin'` can impersonate |
+| **Same org** | Target user must belong to the same organization |
+| **Not self** | Cannot impersonate yourself |
+| **Active users** | Can only impersonate users with `status === 'active'` |
+
+### Data Model
+
+Impersonation state is stored on the admin user's record:
+
+```typescript
+// In Convex schema
+users: defineTable({
+  // ... other fields
+  impersonatingUserId: v.optional(v.id('users')),
+})
+```
+
+When `impersonatingUserId` is set, all queries and mutations automatically use the target user's permissions and data scope.
+
+## Common Use Cases
+
+### Testing Staff Access
+
+Impersonate a Staff member to verify they can only see:
+- Customers assigned to them
+- Data within those customers
+- No billing or organization settings
+
+### Testing Client Access
+
+Impersonate a Client user to confirm:
+- They only see their own customer data
+- No access to other customers
+- Limited functionality appropriate for clients
+
+### Debugging Permission Issues
+
+When a user reports they can't see something:
+1. Impersonate that user
+2. Reproduce the issue
+3. Check the browser console and network requests
+4. Fix the permission check in the Convex function
+
+## Best Practices
+
+1. **Always stop impersonating** when finished testing
+2. **Inform users** if you're impersonating them for support purposes
+3. **Test edge cases** - Try accessing URLs directly that should be forbidden
+4. **Check the banner** - Confirm who you're viewing as before taking actions
+5. **Audit changes** - Remember that actions taken while impersonating affect the target user's data

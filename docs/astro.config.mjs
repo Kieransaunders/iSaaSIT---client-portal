@@ -41,6 +41,7 @@ export default defineConfig({
             { label: 'Organizations', slug: 'features/organizations' },
             { label: 'Customer Management', slug: 'features/customers' },
             { label: 'Role-Based Access', slug: 'features/rbac' },
+            { label: 'User Impersonation', slug: 'features/user-impersonation' },
             { label: 'Billing', slug: 'features/billing' },
           ],
         },

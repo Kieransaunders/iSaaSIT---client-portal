@@ -251,17 +251,22 @@ https://your-convex-url.convex.site/webhooks/lemon-squeezy
 
 > Note: Use `.convex.site` domain, not your custom domain.
 
+### Environment Variables
+
+Add billing environment variables to Netlify:
+
+```bash
+# Via CLI
+netlify env:set VITE_LEMONSQUEEZY_STORE_SLUG your-store-slug
+netlify env:set VITE_LEMONSQUEEZY_PRO_VARIANT_ID your_pro_variant_id
+netlify env:set VITE_LEMONSQUEEZY_BUSINESS_VARIANT_ID your_business_variant_id
+```
+
+Or in Netlify Dashboard: **Site settings → Environment variables**
+
 ### Product Configuration
 
-Ensure products have correct metadata:
-
-```json
-{
-  "maxCustomers": 10,
-  "maxStaff": 3,
-  "maxClients": 50
-}
-```
+Plan limits are configured in `src/config/billing.ts` and `convex/lemonsqueezy/plans.ts`. Update these files if you want different limits for each plan tier.
 
 ---
 
