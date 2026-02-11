@@ -25,7 +25,8 @@ function OnboardingPage() {
   const { user } = Route.useLoaderData();
   const navigate = useNavigate();
   const [orgName, setOrgName] = useState('');
-  const [billingEmail, setBillingEmail] = useState(user?.email || '');
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- user is guaranteed by loader
+  const [billingEmail, setBillingEmail] = useState((user?.email) ?? '');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);

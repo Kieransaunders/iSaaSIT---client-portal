@@ -1,8 +1,8 @@
 import { useMutation, useQuery } from "convex/react";
+import { UserCheck, XCircle } from "lucide-react";
+import { toast } from "sonner";
 import { api } from "../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
-import { XCircle, UserCheck } from "lucide-react";
-import { toast } from "sonner";
 
 export function ImpersonationBanner() {
     const impersonatedUser = useQuery(api.users.impersonate.getImpersonationStatus);

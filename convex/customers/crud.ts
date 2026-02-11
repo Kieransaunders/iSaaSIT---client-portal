@@ -341,7 +341,7 @@ export const deleteCustomer = mutation({
     );
 
     if (activeClientUsers.length > 0 || pendingClientInvitations.length > 0) {
-      const parts: string[] = [];
+      const parts: Array<string> = [];
 
       if (activeClientUsers.length > 0) {
         parts.push(`${activeClientUsers.length} active client user${activeClientUsers.length === 1 ? '' : 's'}`);

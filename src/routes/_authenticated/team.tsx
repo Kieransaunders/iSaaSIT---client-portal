@@ -132,9 +132,13 @@ function TeamPage() {
       ) : (
         <Tabs defaultValue="all">
           <TabsList>
+            {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Defensive null handling */}
             <TabsTrigger value="all">All ({counts?.totalActive ?? 0})</TabsTrigger>
+            {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Defensive null handling */}
             <TabsTrigger value="staff">Staff ({counts?.staffCount ?? 0})</TabsTrigger>
+            {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Defensive null handling */}
             <TabsTrigger value="clients">Clients ({counts?.clientCount ?? 0})</TabsTrigger>
+            {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Defensive null handling */}
             <TabsTrigger value="pending">Pending ({counts?.pendingCount ?? 0})</TabsTrigger>
           </TabsList>
 
@@ -143,7 +147,7 @@ function TeamPage() {
               members={allActiveMembers}
               onRemove={handleRemove}
               isAdmin={isAdmin}
-              currentUserId={hasOrgCheck?.userId}
+              currentUserId={hasOrgCheck.userId}
             />
           </TabsContent>
 
@@ -152,7 +156,7 @@ function TeamPage() {
               members={staffMembers}
               onRemove={handleRemove}
               isAdmin={isAdmin}
-              currentUserId={hasOrgCheck?.userId}
+              currentUserId={hasOrgCheck.userId}
             />
           </TabsContent>
 
@@ -161,7 +165,7 @@ function TeamPage() {
               members={clientMembers}
               onRemove={handleRemove}
               isAdmin={isAdmin}
-              currentUserId={hasOrgCheck?.userId}
+              currentUserId={hasOrgCheck.userId}
             />
           </TabsContent>
 

@@ -150,7 +150,8 @@ function CustomerDetailPage() {
     );
   }
 
-  if (customer === null) {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- customer may be null at runtime
+  if (customer === null || customer === undefined) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
         <h1 className="text-2xl font-bold mb-2">Customer not found</h1>

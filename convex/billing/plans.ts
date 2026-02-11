@@ -48,9 +48,11 @@ export function getLimitsForProductKey(productKey: string | undefined | null): {
   }
 
   const plan = PLAN_TIERS[productKey];
-  if (!plan) {
-    return FREE_TIER_LIMITS;
-  }
+  return {
+    maxCustomers: plan.maxCustomers,
+    maxStaff: plan.maxStaff,
+    maxClients: plan.maxClients,
+  };
 
   return {
     maxCustomers: plan.maxCustomers,
@@ -77,5 +79,9 @@ export function getPlanName(productKey: string | undefined | null): string {
   }
 
   const plan = PLAN_TIERS[productKey];
-  return plan?.name ?? 'Free';
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Defensive check for runtime safety
+  if (plan !== undefined) {
+    return plan.name;
+  }
+  return 'Free';
 }

@@ -120,11 +120,13 @@ export function InviteDialog({ open, onOpenChange }: InviteDialogProps) {
 
   const staffUsage = usageStats?.usage.staff;
   const clientUsage = usageStats?.usage.clients;
-  const isAtLimit = role === 'staff'
-    ? !!staffUsage && staffUsage.count >= staffUsage.max
-    : role === 'client'
-      ? !!clientUsage && clientUsage.count >= clientUsage.max
-      : false;
+  let isAtLimit: boolean;
+  if (role === 'staff') {
+    isAtLimit = !!staffUsage && staffUsage.count >= staffUsage.max;
+  } else {
+    // Client role
+    isAtLimit = !!clientUsage && clientUsage.count >= clientUsage.max;
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

@@ -104,7 +104,8 @@ export const sendInvitation = action({
           `Staff limit reached (${limits.maxStaff}). Upgrade your plan to invite more staff members.`,
         );
       }
-    } else if (args.role === 'client') {
+    } else {
+      // Client role
       if (counts.clientCount + counts.pendingClientCount >= limits.maxClients) {
         throw new ConvexError(`Client limit reached (${limits.maxClients}). Upgrade your plan to invite more clients.`);
       }

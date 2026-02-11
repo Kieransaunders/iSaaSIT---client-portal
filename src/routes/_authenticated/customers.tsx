@@ -238,6 +238,7 @@ function CustomersPage() {
                   <p className="text-sm max-w-sm mb-4">
                     Get started by adding your first customer.
                   </p>
+                  {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- usage may be undefined during loading */}
                   <Button onClick={() => setIsCreateOpen(true)} disabled={usage?.atLimit}>
                     <Plus className="mr-2 h-4 w-4" />
                     Add your first customer
@@ -257,7 +258,8 @@ function CustomersPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="font-medium truncate">{customer.name}</h4>
-                    {customer.email && (
+                    {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Defensive check for runtime safety */}
+                    {customer.email !== undefined && customer.email !== null && customer.email !== '' && (
                       <p className="text-sm text-muted-foreground truncate">
                         {customer.email}
                       </p>

@@ -1,4 +1,5 @@
 import { AppSidebar } from "./app-sidebar";
+import { ImpersonationBanner } from "./impersonation-banner";
 import type { ReactNode } from "react";
 import {
   Breadcrumb,
@@ -20,7 +21,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ImpersonationBanner } from "./impersonation-banner";
 
 interface MainLayoutProps {
   children: ReactNode;

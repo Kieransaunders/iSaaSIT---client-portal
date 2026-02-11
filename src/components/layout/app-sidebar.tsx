@@ -100,14 +100,14 @@ type NavItem = {
   title: string;
   url: string;
   icon: any;
-  roles?: string[];
+  roles?: Array<string>;
   external?: boolean;
 };
 
 /**
  * Filter navigation items based on user role
  */
-function filterNavByRole(items: NavItem[], userRole?: string): NavItem[] {
+function filterNavByRole(items: Array<NavItem>, userRole?: string): Array<NavItem> {
   if (!userRole) return [];
   return items.filter((item) => !item.roles || item.roles.includes(userRole));
 }
@@ -263,11 +263,12 @@ export function AppSidebar() {
                 >
                   <Avatar className="h-8 w-8 rounded-lg">
                     <AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-xs">
-                      {getInitials(user?.firstName, user?.email)}
+                      {getInitials(user?.firstName ?? null, user?.email ?? '')}
                     </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-semibold">
+                      {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- user can be null */}
                       {user?.firstName && user?.lastName
                         ? `${user.firstName} ${user.lastName}`
                         : user?.firstName || user?.email}

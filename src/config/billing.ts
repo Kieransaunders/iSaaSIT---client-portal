@@ -107,7 +107,10 @@ export function isBillingConfigured(): boolean {
 
 export function isPlanAvailable(planId: string): boolean {
   const plan = PLANS[planId];
-  if (plan === undefined) return false;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Defensive check for runtime safety
+  if (plan === undefined) {
+    return false;
+  }
   if (planId === 'free') return true;
   return !!plan.productKey;
 }

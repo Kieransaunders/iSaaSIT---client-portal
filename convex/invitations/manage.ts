@@ -231,8 +231,8 @@ export const resendInvitation = action({
           `Staff limit reached (${limits.maxStaff}). Upgrade your plan to invite more staff members.`,
         );
       }
-    } else if (invitation.role === 'client') {
-      // Subtract 1 because we're replacing the existing pending invitation
+    } else {
+      // Client role - subtract 1 because we're replacing the existing pending invitation
       if (counts.clientCount + counts.pendingClientCount - 1 >= limits.maxClients) {
         throw new ConvexError(`Client limit reached (${limits.maxClients}). Upgrade your plan to invite more clients.`);
       }

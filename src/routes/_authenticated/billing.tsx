@@ -154,7 +154,7 @@ function BillingPage() {
           >
             You&apos;re on a 14-day free trial of Pro. {trialDaysRemaining} {trialDaysRemaining === 1 ? 'day' : 'days'}{' '}
             remaining.{' '}
-            {proPlan?.productKey && (
+            {proPlan.productKey !== undefined && (
               <UpgradeButton
                 productKey={proPlan.productKey}
                 variant="link"

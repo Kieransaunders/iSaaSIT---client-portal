@@ -37,7 +37,8 @@ export function ThemeProvider({
   useEffect(() => {
     setMounted(true);
     const stored = localStorage.getItem(storageKey) as Theme;
-    if (stored) {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Runtime validation of localStorage value
+    if (stored === 'light' || stored === 'dark' || stored === 'system') {
       setThemeState(stored);
     }
   }, [storageKey]);
@@ -78,9 +79,9 @@ export function ThemeProvider({
   const value = {
     theme,
     resolvedTheme,
-    setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme);
-      setThemeState(theme);
+    setTheme: (newTheme: Theme) => {
+      localStorage.setItem(storageKey, newTheme);
+      setThemeState(newTheme);
     },
   };
 
@@ -94,8 +95,10 @@ export function ThemeProvider({
 export const useTheme = () => {
   const context = useContext(ThemeProviderContext);
 
-  if (context === undefined)
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Runtime check for hook usage
+  if (context === undefined) {
     throw new Error("useTheme must be used within a ThemeProvider");
+  }
 
   return context;
 };

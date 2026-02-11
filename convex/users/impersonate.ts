@@ -24,7 +24,7 @@ export const startImpersonating = mutation({
             throw new ConvexError("Only admins can impersonate users");
         }
 
-        const targetUser = await ctx.db.get(args.targetUserId);
+        const targetUser = await ctx.db.get('users', args.targetUserId);
         if (!targetUser) {
             throw new ConvexError("Target user not found");
         }
@@ -38,7 +38,7 @@ export const startImpersonating = mutation({
             return;
         }
 
-        await ctx.db.patch(adminRecord._id, {
+        await ctx.db.patch('users', adminRecord._id, {
             impersonatingUserId: args.targetUserId,
         });
     },
@@ -64,7 +64,7 @@ export const stopImpersonating = mutation({
             throw new ConvexError("User not found");
         }
 
-        await ctx.db.patch(adminRecord._id, {
+        await ctx.db.patch('users', adminRecord._id, {
             impersonatingUserId: undefined,
         });
     },
@@ -86,7 +86,7 @@ export const getImpersonationStatus = query({
 
         if (!user?.impersonatingUserId) return null;
 
-        const targetUser = await ctx.db.get(user.impersonatingUserId);
+        const targetUser = await ctx.db.get('users', user.impersonatingUserId);
         return targetUser;
     },
 });

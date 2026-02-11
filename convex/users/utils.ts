@@ -1,5 +1,5 @@
-import { QueryCtx } from "../_generated/server";
-import { Doc } from "../_generated/dataModel";
+import type { QueryCtx } from "../_generated/server";
+import type { Doc } from "../_generated/dataModel";
 
 /**
  * Resolves the "effective" user. 
@@ -24,7 +24,7 @@ export async function getEffectiveUser(ctx: QueryCtx): Promise<Doc<"users"> | nu
 
     // If this is an admin and they are impersonating someone, resolve the target
     if (actualUser.role === "admin" && actualUser.impersonatingUserId) {
-        const impersonatedUser = await ctx.db.get(actualUser.impersonatingUserId);
+        const impersonatedUser = await ctx.db.get('users', actualUser.impersonatingUserId);
         if (impersonatedUser) {
             return impersonatedUser;
         }

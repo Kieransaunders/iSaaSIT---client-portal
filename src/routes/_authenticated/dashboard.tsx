@@ -52,7 +52,7 @@ function DashboardPage() {
     }
   }, [hasOrgCheck, navigate, syncAttempted, lastSyncResult]);
 
-  if (!org && hasOrgCheck?.hasOrg === false) {
+  if (hasOrgCheck?.hasOrg === false) {
     return (
       <div className="flex items-center justify-center h-96">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -170,7 +170,7 @@ function ClientDashboard() {
               <Skeleton className="h-16 w-full" />
               <Skeleton className="h-16 w-full" />
             </div>
-          ) : assignedStaff && assignedStaff.length > 0 ? (
+          ) : assignedStaff.length > 0 ? (
             <div className="space-y-3">
               {assignedStaff.map((staff: any) => (
                 <div

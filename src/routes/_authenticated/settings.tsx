@@ -38,7 +38,7 @@ function SettingsPage() {
   // Check if form has changes
   const hasChanges = org && (
     orgName !== org.name ||
-    billingEmail !== (org.billingEmail || '')
+    billingEmail !== ((org.billingEmail) ?? '')
   );
 
   const handleSave = async () => {
@@ -50,7 +50,9 @@ function SettingsPage() {
 
     try {
       await updateOrg({
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- org is checked before use
         name: orgName !== org?.name ? orgName : undefined,
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- org is checked before use
         billingEmail: billingEmail !== org?.billingEmail ? billingEmail : undefined,
       });
       setSaveSuccess(true);

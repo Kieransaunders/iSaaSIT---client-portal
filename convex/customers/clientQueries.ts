@@ -21,7 +21,7 @@ export const getMyCustomer = query({
         }
 
         // Get the customer record
-        const customer = await ctx.db.get(user.customerId);
+        const customer = await ctx.db.get('customers', user.customerId);
         return customer;
     },
 });
@@ -53,12 +53,12 @@ export const getMyAssignedStaff = query({
         // Get the staff user records
         const staffUsers = await Promise.all(
             assignments.map(async (assignment) => {
-                const staffUser = await ctx.db.get(assignment.staffUserId);
+                const staffUser = await ctx.db.get('users', assignment.staffUserId);
                 return staffUser;
             })
         );
 
         // Filter out any null values and return
-        return staffUsers.filter((user) => user !== null);
+        return staffUsers.filter((u) => u !== null);
     },
 });
