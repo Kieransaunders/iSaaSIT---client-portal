@@ -1,15 +1,15 @@
-import { ConvexError, v } from "convex/values";
-import { action, query } from "./_generated/server";
-import { internal } from "./_generated/api";
-import { processWorkOSWebhook, signWorkOSWebhook } from "./webhooks/workosShared";
-import type { Id } from "./_generated/dataModel";
+import { ConvexError, v } from 'convex/values';
+import { action, query } from './_generated/server';
+import { internal } from './_generated/api';
+import { processWorkOSWebhook, signWorkOSWebhook } from './webhooks/workosShared';
+import type { Id } from './_generated/dataModel';
 
 function isTestApiKey(apiKey?: string): boolean {
-  return !!apiKey && apiKey.startsWith("sk_test_");
+  return !!apiKey && apiKey.startsWith('sk_test_');
 }
 
 function randomId(prefix: string): string {
-  if (typeof crypto.randomUUID === "function") {
+  if (typeof crypto.randomUUID === 'function') {
     return `${prefix}_${crypto.randomUUID()}`;
   }
   return `${prefix}_${Date.now()}_${Math.random().toString(16).slice(2)}`;
@@ -29,34 +29,40 @@ export const getStatus = query({
       apiKeyIsTest: v.optional(v.boolean()),
     }),
     billing: v.object({
-      apiKeySet: v.boolean(),
+      organizationTokenSet: v.boolean(),
       webhookSecretSet: v.boolean(),
-      proVariantIdSet: v.boolean(),
-      businessVariantIdSet: v.boolean(),
+      serverSet: v.boolean(),
+      proMonthlyProductIdSet: v.boolean(),
+      proYearlyProductIdSet: v.boolean(),
+      businessMonthlyProductIdSet: v.boolean(),
+      businessYearlyProductIdSet: v.boolean(),
     }),
   }),
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
-      throw new ConvexError("Not authenticated");
+      throw new ConvexError('Not authenticated');
     }
 
     const userRecord = await ctx.db
-      .query("users")
-      .withIndex("by_workos_user_id", (q) => q.eq("workosUserId", identity.subject))
+      .query('users')
+      .withIndex('by_workos_user_id', (q) => q.eq('workosUserId', identity.subject))
       .first();
 
-    if (!userRecord || userRecord.role !== "admin") {
-      throw new ConvexError("Admin role required");
+    if (!userRecord || userRecord.role !== 'admin') {
+      throw new ConvexError('Admin role required');
     }
 
     const apiKey = process.env.WORKOS_API_KEY;
     const clientId = process.env.WORKOS_CLIENT_ID;
     const webhookSecret = process.env.WORKOS_WEBHOOK_SECRET;
-    const billingApiKey = process.env.LEMONSQUEEZY_API_KEY;
-    const billingWebhookSecret = process.env.LEMONSQUEEZY_WEBHOOK_SECRET;
-    const proVariantId = process.env.LEMONSQUEEZY_PRO_VARIANT_ID;
-    const businessVariantId = process.env.LEMONSQUEEZY_BUSINESS_VARIANT_ID;
+    const billingOrganizationToken = process.env.POLAR_ORGANIZATION_TOKEN;
+    const billingWebhookSecret = process.env.POLAR_WEBHOOK_SECRET;
+    const billingServer = process.env.POLAR_SERVER;
+    const proMonthlyProductId = process.env.POLAR_PRO_MONTHLY_PRODUCT_ID;
+    const proYearlyProductId = process.env.POLAR_PRO_YEARLY_PRODUCT_ID;
+    const businessMonthlyProductId = process.env.POLAR_BUSINESS_MONTHLY_PRODUCT_ID;
+    const businessYearlyProductId = process.env.POLAR_BUSINESS_YEARLY_PRODUCT_ID;
 
     return {
       convex: {
@@ -70,10 +76,13 @@ export const getStatus = query({
         apiKeyIsTest: apiKey ? isTestApiKey(apiKey) : undefined,
       },
       billing: {
-        apiKeySet: !!billingApiKey,
+        organizationTokenSet: !!billingOrganizationToken,
         webhookSecretSet: !!billingWebhookSecret,
-        proVariantIdSet: !!proVariantId,
-        businessVariantIdSet: !!businessVariantId,
+        serverSet: !!billingServer,
+        proMonthlyProductIdSet: !!proMonthlyProductId,
+        proYearlyProductIdSet: !!proYearlyProductId,
+        businessMonthlyProductIdSet: !!businessMonthlyProductId,
+        businessYearlyProductIdSet: !!businessYearlyProductId,
       },
     };
   },
@@ -82,8 +91,8 @@ export const getStatus = query({
 export const simulateWorkOSWebhook = action({
   args: {
     email: v.string(),
-    role: v.union(v.literal("staff"), v.literal("client")),
-    customerId: v.optional(v.id("customers")),
+    role: v.union(v.literal('staff'), v.literal('client')),
+    customerId: v.optional(v.id('customers')),
     firstName: v.optional(v.string()),
     lastName: v.optional(v.string()),
   },
@@ -92,39 +101,39 @@ export const simulateWorkOSWebhook = action({
     status: v.number(),
     message: v.string(),
     event: v.optional(v.string()),
-    userId: v.optional(v.id("users")),
+    userId: v.optional(v.id('users')),
     invitationId: v.string(),
   }),
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
-      throw new ConvexError("Not authenticated");
+      throw new ConvexError('Not authenticated');
     }
 
     const userRecord = await ctx.runQuery(internal.invitations.internal.getUserRecord, {
       workosUserId: identity.subject,
     });
 
-    if (!userRecord || userRecord.role !== "admin") {
-      throw new ConvexError("Admin role required");
+    if (!userRecord || userRecord.role !== 'admin') {
+      throw new ConvexError('Admin role required');
     }
 
     if (!userRecord.orgId) {
-      throw new ConvexError("User not in organization");
+      throw new ConvexError('User not in organization');
     }
 
-    if (args.role === "client" && !args.customerId) {
-      throw new ConvexError("Customer ID required for client invitations");
+    if (args.role === 'client' && !args.customerId) {
+      throw new ConvexError('Customer ID required for client invitations');
     }
 
-    if (args.role === "client" && args.customerId) {
+    if (args.role === 'client' && args.customerId) {
       const customer = await ctx.runQuery(internal.invitations.internal.getCustomer, {
         customerId: args.customerId,
         orgId: userRecord.orgId,
       });
 
       if (!customer) {
-        throw new ConvexError("Customer not found or does not belong to your organization");
+        throw new ConvexError('Customer not found or does not belong to your organization');
       }
     }
 
@@ -133,21 +142,21 @@ export const simulateWorkOSWebhook = action({
     });
 
     if (!org?.workosOrgId) {
-      throw new ConvexError("Organization not configured with WorkOS");
+      throw new ConvexError('Organization not configured with WorkOS');
     }
 
     const webhookSecret = process.env.WORKOS_WEBHOOK_SECRET;
     if (!webhookSecret) {
-      throw new ConvexError("WORKOS_WEBHOOK_SECRET not configured");
+      throw new ConvexError('WORKOS_WEBHOOK_SECRET not configured');
     }
 
     const apiKey = process.env.WORKOS_API_KEY;
     if (apiKey && !isTestApiKey(apiKey)) {
-      throw new ConvexError("Webhook simulator requires a WorkOS test API key");
+      throw new ConvexError('Webhook simulator requires a WorkOS test API key');
     }
 
-    const invitationId = randomId("invitation");
-    const workosUserId = randomId("user");
+    const invitationId = randomId('invitation');
+    const workosUserId = randomId('user');
     const now = Date.now();
     const nowIso = new Date(now).toISOString();
     const expiresIso = new Date(now + 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -164,13 +173,13 @@ export const simulateWorkOSWebhook = action({
     });
 
     const eventPayload = {
-      id: randomId("evt"),
-      event: "invitation.accepted",
+      id: randomId('evt'),
+      event: 'invitation.accepted',
       created_at: nowIso,
       data: {
-        object: "invitation",
+        object: 'invitation',
         id: invitationId,
-        state: "accepted",
+        state: 'accepted',
         accepted_at: nowIso,
         revoked_at: null,
         expires_at: expiresIso,

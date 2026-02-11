@@ -1,52 +1,38 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useAction, useQuery } from "convex/react";
-import { useMemo, useState } from "react";
-import {
-  AlertTriangle,
-  CheckCircle2,
-  Loader2,
-  MinusCircle,
-  XCircle,
-} from "lucide-react";
-import { api } from "../../../convex/_generated/api";
-import type { Id } from "../../../convex/_generated/dataModel";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
+import { createFileRoute } from '@tanstack/react-router';
+import { useAction, useQuery } from 'convex/react';
+import { useMemo, useState } from 'react';
+import { AlertTriangle, CheckCircle2, Loader2, MinusCircle, XCircle } from 'lucide-react';
+import { api } from '../../../convex/_generated/api';
+import type { Id } from '../../../convex/_generated/dataModel';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 
-export const Route = createFileRoute("/_authenticated/tools")({
+export const Route = createFileRoute('/_authenticated/tools')({
   component: ToolsPage,
 });
 
-type StatusState = "ok" | "warn" | "error" | "unknown";
+type StatusState = 'ok' | 'warn' | 'error' | 'unknown';
 
 function StatusIcon({ state }: { state: StatusState }) {
-  if (state === "ok") {
+  if (state === 'ok') {
     return <CheckCircle2 className="h-4 w-4 text-emerald-500" />;
   }
-  if (state === "warn") {
+  if (state === 'warn') {
     return <AlertTriangle className="h-4 w-4 text-amber-500" />;
   }
-  if (state === "error") {
+  if (state === 'error') {
     return <XCircle className="h-4 w-4 text-destructive" />;
   }
   return <MinusCircle className="h-4 w-4 text-muted-foreground" />;
 }
 
-function StatusRow({
-  label,
-  value,
-  state,
-}: {
-  label: string;
-  value: string;
-  state: StatusState;
-}) {
+function StatusRow({ label, value, state }: { label: string; value: string; state: StatusState }) {
   return (
     <div className="flex items-center justify-between rounded-md border border-border px-3 py-2">
       <div className="flex items-center gap-2 text-sm">
@@ -60,14 +46,14 @@ function StatusRow({
 
 function ToolsPage() {
   const orgCheck = useQuery(api.orgs.get.hasOrg);
-  const isAdmin = orgCheck?.role === "admin";
+  const isAdmin = orgCheck?.role === 'admin';
 
-  const status = useQuery(api.tools.getStatus, isAdmin ? {} : "skip");
-  const customers = useQuery(api.customers.crud.listCustomers, isAdmin ? {} : "skip");
+  const status = useQuery(api.tools.getStatus, isAdmin ? {} : 'skip');
+  const customers = useQuery(api.customers.crud.listCustomers, isAdmin ? {} : 'skip');
   const simulateWebhook = useAction(api.tools.simulateWorkOSWebhook);
 
-  const [role, setRole] = useState<"staff" | "client">("staff");
-  const [customerId, setCustomerId] = useState<Id<"customers"> | undefined>(undefined);
+  const [role, setRole] = useState<'staff' | 'client'>('staff');
+  const [customerId, setCustomerId] = useState<Id<'customers'> | undefined>(undefined);
   const [isRunning, setIsRunning] = useState(false);
   const [lastResult, setLastResult] = useState<{
     ok: boolean;
@@ -77,16 +63,13 @@ function ToolsPage() {
   } | null>(null);
 
   const defaultEmail = useMemo(() => {
-    const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
     return `test+${stamp}@example.com`;
   }, []);
 
   const [email, setEmail] = useState(defaultEmail);
 
-  const canRun =
-    !isRunning &&
-    email.trim().length > 3 &&
-    (role === "staff" || !!customerId);
+  const canRun = !isRunning && email.trim().length > 3 && (role === 'staff' || !!customerId);
 
   if (orgCheck === undefined) {
     return (
@@ -112,29 +95,28 @@ function ToolsPage() {
     );
   }
 
-  const convexState: StatusState = status.convex.connected ? "ok" : "error";
-  const workosClientState: StatusState = status.workos.clientIdSet ? "ok" : "error";
-  const workosApiState: StatusState = status.workos.apiKeySet ? "ok" : "error";
-  const workosWebhookState: StatusState = status.workos.webhookSecretSet ? "ok" : "error";
-  const webhookTestState: StatusState = lastResult ? (lastResult.ok ? "ok" : "error") : "unknown";
-  const billingPlanMappingMissing =
-    (status.billing.apiKeySet || status.billing.webhookSecretSet) &&
-    !status.billing.proVariantIdSet &&
-    !status.billing.businessVariantIdSet;
-  const billingPlanMappingState: StatusState = status.billing.proVariantIdSet ||
-    status.billing.businessVariantIdSet
-    ? "ok"
-    : billingPlanMappingMissing
-      ? "warn"
-      : "unknown";
+  const convexState: StatusState = status.convex.connected ? 'ok' : 'error';
+  const workosClientState: StatusState = status.workos.clientIdSet ? 'ok' : 'error';
+  const workosApiState: StatusState = status.workos.apiKeySet ? 'ok' : 'error';
+  const workosWebhookState: StatusState = status.workos.webhookSecretSet ? 'ok' : 'error';
+  const webhookTestState: StatusState = lastResult ? (lastResult.ok ? 'ok' : 'error') : 'unknown';
+  const billingConfigured =
+    status.billing.organizationTokenSet || status.billing.webhookSecretSet || status.billing.serverSet;
+  const billingProductsConfigured =
+    status.billing.proMonthlyProductIdSet ||
+    status.billing.proYearlyProductIdSet ||
+    status.billing.businessMonthlyProductIdSet ||
+    status.billing.businessYearlyProductIdSet;
+  const billingProductsMissing = billingConfigured && !billingProductsConfigured;
+  const billingProductsState: StatusState = billingProductsConfigured
+    ? 'ok'
+    : billingProductsMissing
+      ? 'warn'
+      : 'unknown';
 
-  const environmentLabel = import.meta.env.DEV ? "Development" : "Production";
+  const environmentLabel = import.meta.env.DEV ? 'Development' : 'Production';
   const apiKeyIsTest = status.workos.apiKeyIsTest === true;
-  const apiKeyBadgeState: StatusState = status.workos.apiKeySet
-    ? apiKeyIsTest
-      ? "ok"
-      : "warn"
-    : "error";
+  const apiKeyBadgeState: StatusState = status.workos.apiKeySet ? (apiKeyIsTest ? 'ok' : 'warn') : 'error';
 
   const handleRunTest = async () => {
     if (!canRun) return;
@@ -145,7 +127,7 @@ function ToolsPage() {
       const result = await simulateWebhook({
         email,
         role,
-        customerId: role === "client" ? customerId : undefined,
+        customerId: role === 'client' ? customerId : undefined,
       });
       setLastResult({
         ok: result.ok,
@@ -154,7 +136,7 @@ function ToolsPage() {
         userId: result.userId,
       });
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Webhook test failed";
+      const message = error instanceof Error ? error.message : 'Webhook test failed';
       setLastResult({ ok: false, status: 500, message });
     } finally {
       setIsRunning(false);
@@ -176,15 +158,11 @@ function ToolsPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             <StatusRow label="Convex" value="Connected" state={convexState} />
-            <StatusRow
-              label="Mode"
-              value={environmentLabel}
-              state={import.meta.env.DEV ? "warn" : "ok"}
-            />
+            <StatusRow label="Mode" value={environmentLabel} state={import.meta.env.DEV ? 'warn' : 'ok'} />
             <StatusRow
               label="Deployment"
-              value={status.convex.deployment || "Unknown"}
-              state={status.convex.deployment ? "ok" : "unknown"}
+              value={status.convex.deployment || 'Unknown'}
+              state={status.convex.deployment ? 'ok' : 'unknown'}
             />
           </CardContent>
         </Card>
@@ -197,23 +175,17 @@ function ToolsPage() {
           <CardContent className="space-y-3">
             <StatusRow
               label="Client ID"
-              value={status.workos.clientIdSet ? "Set" : "Missing"}
+              value={status.workos.clientIdSet ? 'Set' : 'Missing'}
               state={workosClientState}
             />
             <StatusRow
               label="API Key"
-              value={
-                status.workos.apiKeySet
-                  ? status.workos.apiKeyIsTest
-                    ? "Test key"
-                    : "Live key"
-                  : "Missing"
-              }
+              value={status.workos.apiKeySet ? (status.workos.apiKeyIsTest ? 'Test key' : 'Live key') : 'Missing'}
               state={workosApiState}
             />
             <StatusRow
               label="Webhook Secret"
-              value={status.workos.webhookSecretSet ? "Set" : "Missing"}
+              value={status.workos.webhookSecretSet ? 'Set' : 'Missing'}
               state={workosWebhookState}
             />
           </CardContent>
@@ -230,9 +202,7 @@ function ToolsPage() {
                 <StatusIcon state={webhookTestState} />
                 <span className="font-medium">invitation.accepted</span>
               </div>
-              <span className="text-xs text-muted-foreground">
-                {lastResult ? `${lastResult.status}` : "Not run"}
-              </span>
+              <span className="text-xs text-muted-foreground">{lastResult ? `${lastResult.status}` : 'Not run'}</span>
             </div>
             {lastResult && (
               <div className="rounded-md border border-border px-3 py-2 text-xs text-muted-foreground">
@@ -245,34 +215,35 @@ function ToolsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Billing</CardTitle>
-            <CardDescription>Optional Lemon Squeezy checks</CardDescription>
+            <CardDescription>Optional Polar checks</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <StatusRow
-              label="API Key"
-              value={status.billing.apiKeySet ? "Set" : "Missing"}
-              state={status.billing.apiKeySet ? "ok" : "warn"}
+              label="Organization Token"
+              value={status.billing.organizationTokenSet ? 'Set' : 'Missing'}
+              state={status.billing.organizationTokenSet ? 'ok' : 'warn'}
             />
             <StatusRow
               label="Webhook Secret"
-              value={status.billing.webhookSecretSet ? "Set" : "Missing"}
-              state={status.billing.webhookSecretSet ? "ok" : "warn"}
+              value={status.billing.webhookSecretSet ? 'Set' : 'Missing'}
+              state={status.billing.webhookSecretSet ? 'ok' : 'warn'}
             />
             <StatusRow
-              label="Plan Mapping"
-              value={
-                status.billing.proVariantIdSet || status.billing.businessVariantIdSet
-                  ? "Ready"
-                  : "Missing variant IDs"
-              }
-              state={billingPlanMappingState}
+              label="Server"
+              value={status.billing.serverSet ? 'Set' : 'Missing'}
+              state={status.billing.serverSet ? 'ok' : 'warn'}
             />
-            {billingPlanMappingMissing && (
+            <StatusRow
+              label="Product IDs"
+              value={billingProductsConfigured ? 'Ready' : 'Missing product IDs'}
+              state={billingProductsState}
+            />
+            {billingProductsMissing && (
               <Alert className="border-amber-500 bg-amber-50 dark:bg-amber-950/20">
                 <AlertTriangle className="h-4 w-4 text-amber-600" />
                 <AlertDescription className="text-amber-900 dark:text-amber-100">
-                  Lemon Squeezy is configured, but no plan variant IDs are set in Convex.
-                  Paid subscriptions will default to free tier limits.
+                  Polar is configured, but no product IDs are set in Convex. Paid subscriptions will default to free
+                  tier limits.
                 </AlertDescription>
               </Alert>
             )}
@@ -289,21 +260,16 @@ function ToolsPage() {
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="test-email">Invite Email</Label>
-              <Input
-                id="test-email"
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-              />
+              <Input id="test-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>Role</Label>
               <Select
                 value={role}
                 onValueChange={(value) => {
-                  const nextRole = value as "staff" | "client";
+                  const nextRole = value as 'staff' | 'client';
                   setRole(nextRole);
-                  if (nextRole !== "client") {
+                  if (nextRole !== 'client') {
                     setCustomerId(undefined);
                   }
                 }}
@@ -319,13 +285,10 @@ function ToolsPage() {
             </div>
           </div>
 
-          {role === "client" && (
+          {role === 'client' && (
             <div className="space-y-2">
               <Label>Customer</Label>
-              <Select
-                value={customerId ?? ""}
-                onValueChange={(value) => setCustomerId(value as Id<"customers">)}
-              >
+              <Select value={customerId ?? ''} onValueChange={(value) => setCustomerId(value as Id<'customers'>)}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select customer" />
                 </SelectTrigger>
@@ -337,9 +300,7 @@ function ToolsPage() {
                   ))}
                 </SelectContent>
               </Select>
-              {customers === undefined && (
-                <p className="text-xs text-muted-foreground">Loading customers…</p>
-              )}
+              {customers === undefined && <p className="text-xs text-muted-foreground">Loading customers…</p>}
             </div>
           )}
 
@@ -350,17 +311,13 @@ function ToolsPage() {
               {isRunning && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Run Webhook Test
             </Button>
-            <Badge variant={status.workos.webhookSecretSet ? "secondary" : "destructive"}>
+            <Badge variant={status.workos.webhookSecretSet ? 'secondary' : 'destructive'}>
               <StatusIcon state={workosWebhookState} />
-              Webhook secret {status.workos.webhookSecretSet ? "set" : "missing"}
+              Webhook secret {status.workos.webhookSecretSet ? 'set' : 'missing'}
             </Badge>
-            <Badge variant={apiKeyIsTest ? "secondary" : "outline"}>
+            <Badge variant={apiKeyIsTest ? 'secondary' : 'outline'}>
               <StatusIcon state={apiKeyBadgeState} />
-              {apiKeyIsTest
-                ? "Test mode only"
-                : status.workos.apiKeySet
-                  ? "Live key detected"
-                  : "API key missing"}
+              {apiKeyIsTest ? 'Test mode only' : status.workos.apiKeySet ? 'Live key detected' : 'API key missing'}
             </Badge>
           </div>
         </CardContent>

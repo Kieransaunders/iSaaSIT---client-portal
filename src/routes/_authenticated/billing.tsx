@@ -31,7 +31,6 @@ function BillingPage() {
   const canAccessBilling = !!hasOrgCheck?.hasOrg && hasOrgCheck.role === 'admin';
   const usageStats = useQuery(api.billing.queries.getUsageStats, canAccessBilling ? {} : 'skip');
   const billingInfo = useQuery(api.billing.queries.getBillingInfo, canAccessBilling ? {} : 'skip');
-  const org = useQuery(api.orgs.get.getMyOrg, hasOrgCheck?.hasOrg ? {} : 'skip');
   const getPortalUrl = useAction(api.billing.actions.getCustomerPortalUrl);
 
   const [showCancelDialog, setShowCancelDialog] = useState(false);
@@ -57,8 +56,8 @@ function BillingPage() {
     setIsLoadingPortal(true);
     try {
       const result = await getPortalUrl({});
-      if (result.portalUrl) {
-        window.open(result.portalUrl, '_blank');
+      if (result.url) {
+        window.open(result.url, '_blank');
       }
     } catch (error) {
       toast.error('Failed to open customer portal. Please try again.');
@@ -98,7 +97,7 @@ function BillingPage() {
   }
 
   // Loading state
-  if (usageStats === undefined || billingInfo === undefined || org === undefined) {
+  if (usageStats === undefined || billingInfo === undefined) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -108,9 +107,9 @@ function BillingPage() {
 
   const currentPlanName = usageStats.plan.name;
   const subscriptionStatus = usageStats.plan.status;
-  const isActive = subscriptionStatus === 'active';
-  const isCancelled = subscriptionStatus === 'cancelled';
-  const hasSubscription = billingInfo.subscriptionId !== undefined;
+  const isActive = subscriptionStatus === 'active' || subscriptionStatus === 'trialing';
+  const isCancelled = subscriptionStatus === 'cancelled' || subscriptionStatus === 'canceled';
+  const hasSubscription = !!billingInfo.subscriptionId;
 
   // Calculate trial status
   const isTrialing = billingInfo.isTrialing;
@@ -119,7 +118,7 @@ function BillingPage() {
 
   // Get available plans from config
   const availablePlans = getAvailablePlans();
-  const proPlan = availablePlans.find((p) => p.id === 'pro');
+  const proPlan = availablePlans.find((p) => p.id === 'proMonthly');
   const billingEnabled = isBillingConfigured();
 
   return (
@@ -127,9 +126,7 @@ function BillingPage() {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Billing</h1>
-        <p className="text-muted-foreground">
-          Manage your subscription and usage
-        </p>
+        <p className="text-muted-foreground">Manage your subscription and usage</p>
       </div>
 
       {/* Billing Not Configured Warning */}
@@ -137,23 +134,29 @@ function BillingPage() {
         <Alert className="border-amber-500 bg-amber-50 dark:bg-amber-950/20">
           <AlertCircle className="h-4 w-4 text-amber-600" />
           <AlertDescription className="text-amber-900 dark:text-amber-100">
-            Billing is not configured. Set <code>VITE_LEMONSQUEEZY_STORE_SLUG</code> in your environment to enable paid plans.
+            Billing is not configured. Set <code>VITE_POLAR_SERVER</code> in your environment to enable paid plans.
           </AlertDescription>
         </Alert>
       )}
 
       {/* Trial Banner */}
       {isTrialing && proPlan && billingEnabled && (
-        <Alert className={trialExpiringWarning ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/20' : 'border-blue-500 bg-blue-50 dark:bg-blue-950/20'}>
+        <Alert
+          className={
+            trialExpiringWarning
+              ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/20'
+              : 'border-blue-500 bg-blue-50 dark:bg-blue-950/20'
+          }
+        >
           <AlertCircle className={`h-4 w-4 ${trialExpiringWarning ? 'text-amber-600' : 'text-blue-600'}`} />
-          <AlertDescription className={trialExpiringWarning ? 'text-amber-900 dark:text-amber-100' : 'text-blue-900 dark:text-blue-100'}>
-            You&apos;re on a 14-day free trial of Pro. {trialDaysRemaining} {trialDaysRemaining === 1 ? 'day' : 'days'} remaining.{' '}
-            {proPlan.variantId && org && (
+          <AlertDescription
+            className={trialExpiringWarning ? 'text-amber-900 dark:text-amber-100' : 'text-blue-900 dark:text-blue-100'}
+          >
+            You&apos;re on a 14-day free trial of Pro. {trialDaysRemaining} {trialDaysRemaining === 1 ? 'day' : 'days'}{' '}
+            remaining.{' '}
+            {proPlan?.productKey && (
               <UpgradeButton
-                planId="pro"
-                email={org.billingEmail || billingInfo.name}
-                orgName={org.name}
-                orgConvexId={org._id}
+                productKey={proPlan.productKey}
                 variant="link"
                 className="h-auto p-0 text-blue-700 dark:text-blue-300"
               >
@@ -170,9 +173,7 @@ function BillingPage() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>Current Plan</CardTitle>
-              <CardDescription>
-                Your active subscription and status
-              </CardDescription>
+              <CardDescription>Your active subscription and status</CardDescription>
             </div>
             <div className="flex gap-2">
               <Badge variant="secondary">{currentPlanName}</Badge>
@@ -206,16 +207,9 @@ function BillingPage() {
             )}
 
             {/* Upgrade button for free tier or cancelled */}
-            {billingEnabled && (!hasSubscription || isCancelled) && org && proPlan?.variantId && (
+            {billingEnabled && (!hasSubscription || isCancelled) && proPlan?.productKey && (
               <div className="flex gap-2">
-                <UpgradeButton
-                  planId="pro"
-                  email={org.billingEmail || billingInfo.name}
-                  orgName={org.name}
-                  orgConvexId={org._id}
-                >
-                  Upgrade to Pro
-                </UpgradeButton>
+                <UpgradeButton productKey={proPlan.productKey}>Upgrade to Pro</UpgradeButton>
               </div>
             )}
           </div>
@@ -267,8 +261,8 @@ function BillingPage() {
                   <CardContent className="space-y-4">
                     <div className="text-3xl font-bold">
                       {plan.price}
-                      {plan.price !== '$0' && (
-                        <span className="text-sm font-normal text-muted-foreground">/month</span>
+                      {plan.price !== '$0' && plan.interval && (
+                        <span className="text-sm font-normal text-muted-foreground">/{plan.interval}</span>
                       )}
                     </div>
                     <ul className="space-y-2">
@@ -279,29 +273,21 @@ function BillingPage() {
                         </li>
                       ))}
                     </ul>
-                    {org && (
-                      <div>
-                        {isCurrent ? (
-                          <Button variant="outline" className="w-full" disabled>
-                            Current Plan
-                          </Button>
-                        ) : plan.variantId ? (
-                          <UpgradeButton
-                            planId={plan.id}
-                            email={org.billingEmail || billingInfo.name}
-                            orgName={org.name}
-                            orgConvexId={org._id}
-                            className="w-full"
-                          >
-                            Upgrade
-                          </UpgradeButton>
-                        ) : (
-                          <Button className="w-full" disabled>
-                            Not Available
-                          </Button>
-                        )}
-                      </div>
-                    )}
+                    <div>
+                      {isCurrent ? (
+                        <Button variant="outline" className="w-full" disabled>
+                          Current Plan
+                        </Button>
+                      ) : plan.productKey ? (
+                        <UpgradeButton productKey={plan.productKey} className="w-full">
+                          Upgrade
+                        </UpgradeButton>
+                      ) : (
+                        <Button className="w-full" disabled>
+                          Not Available
+                        </Button>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               );
@@ -316,9 +302,7 @@ function BillingPage() {
           <h2 className="text-xl font-semibold mb-4">Invoices</h2>
           <Card>
             <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground mb-4">
-                View your billing history and download receipts
-              </p>
+              <p className="text-sm text-muted-foreground mb-4">View your billing history and download receipts</p>
               <Button onClick={handleViewInvoices} disabled={isLoadingPortal} variant="outline">
                 {isLoadingPortal && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 View Invoices & Receipts
@@ -369,9 +353,9 @@ function BillingPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Cancel Subscription</AlertDialogTitle>
             <AlertDialogDescription>
-              Your subscription will remain active until the end of your current billing period.
-              After that, your workspace will be downgraded to the Free plan with reduced limits.
-              Your data will be preserved but you won&apos;t be able to create new resources beyond Free tier limits.
+              Your subscription will remain active until the end of your current billing period. After that, your
+              workspace will be downgraded to the Free plan with reduced limits. Your data will be preserved but you
+              won&apos;t be able to create new resources beyond Free tier limits.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

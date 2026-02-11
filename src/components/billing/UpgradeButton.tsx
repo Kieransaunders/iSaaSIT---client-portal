@@ -1,100 +1,50 @@
-import { useEffect, useState } from "react";
-import type { ReactNode } from "react";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-
-import { getCheckoutUrl, isPlanAvailable } from "@/config/billing";
-
-// TypeScript declarations for Lemon.js
-declare global {
-  interface Window {
-    createLemonSqueezy?: () => void;
-    LemonSqueezy?: {
-      Url: {
-        Open: (url: string) => void;
-      };
-    };
-  }
-}
+import { useAction } from 'convex/react';
+import type { ReactNode } from 'react';
+import { toast } from 'sonner';
+import { api } from '../../../convex/_generated/api';
+import { Button } from '@/components/ui/button';
 
 interface UpgradeButtonProps {
-  planId: string;
-  email: string;
-  orgName: string;
-  orgConvexId: string;
+  productKey: string;
   disabled?: boolean;
   children?: ReactNode;
 }
 
 export function UpgradeButton({
-  planId,
-  email,
-  orgName,
-  orgConvexId,
+  productKey,
   disabled,
-  children = "Upgrade Plan",
+  children = 'Upgrade Plan',
   onClick,
   ...props
 }: UpgradeButtonProps & React.ComponentProps<typeof Button>) {
-  const [isLoaded, setIsLoaded] = useState(false);
+  const generateCheckout = useAction(api.billing.actions.createCheckoutUrl);
 
-  useEffect(() => {
-    // Load Lemon.js script
-    const script = document.createElement("script");
-    script.src = "https://app.lemonsqueezy.com/js/lemon.js";
-    script.defer = true;
+  const handleUpgrade = async () => {
+    if (!productKey) {
+      toast.error('This plan is not available. Please contact support.');
+      return;
+    }
 
-    script.onload = () => {
-      // Initialize Lemon.js for React
-      if (window.createLemonSqueezy) {
-        window.createLemonSqueezy();
-        setIsLoaded(true);
+    try {
+      const result = await generateCheckout({ productKey });
+      if (result?.url) {
+        window.location.href = result.url;
+      } else {
+        toast.error('Unable to start checkout. Please try again later.');
       }
-    };
-
-    document.body.appendChild(script);
-
-    // Cleanup on unmount
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
-
-  const handleUpgrade = () => {
-    if (!isLoaded || !window.LemonSqueezy) {
-      toast.error("Payment system is loading. Please try again in a moment.");
-      return;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to start checkout.';
+      toast.error(message);
     }
-
-    // Check if plan is available
-    if (!isPlanAvailable(planId)) {
-      toast.error("This plan is not available. Please contact support.");
-      return;
-    }
-
-    // Get checkout URL from config
-    const checkoutUrl = getCheckoutUrl(planId, {
-      email,
-      orgName,
-      orgConvexId,
-    });
-
-    if (!checkoutUrl) {
-      toast.error("Unable to start checkout. Please try again later.");
-      return;
-    }
-
-    // Open checkout overlay
-    window.LemonSqueezy.Url.Open(checkoutUrl);
   };
 
   return (
     <Button
-      onClick={(e) => {
-        handleUpgrade();
-        onClick?.(e);
+      onClick={async (event) => {
+        await handleUpgrade();
+        onClick?.(event);
       }}
-      disabled={!isLoaded || disabled}
+      disabled={disabled}
       {...props}
     >
       {children}

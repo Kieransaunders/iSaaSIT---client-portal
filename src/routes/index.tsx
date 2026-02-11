@@ -1,11 +1,29 @@
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { getAuth, getSignInUrl, getSignUpUrl } from '@workos/authkit-tanstack-react-start';
 import { useAction } from 'convex/react';
-import { 
-  ArrowRight, Building2, CheckCircle2, ChevronDown, Code2, Command, 
-  CreditCard, Database, FileText, Github, HelpCircle, Layers, Lock, 
-  Mail, MessageCircle, Server, Shield, Sparkles, Terminal,
-  Twitter, Users, Zap
+import {
+  ArrowRight,
+  Building2,
+  CheckCircle2,
+  ChevronDown,
+  Code2,
+  Command,
+  CreditCard,
+  Database,
+  FileText,
+  Github,
+  HelpCircle,
+  Layers,
+  Lock,
+  Mail,
+  MessageCircle,
+  Server,
+  Shield,
+  Sparkles,
+  Terminal,
+  Twitter,
+  Users,
+  Zap,
 } from 'lucide-react';
 import { useEffect } from 'react';
 import { api } from '../../convex/_generated/api';
@@ -43,19 +61,36 @@ function Home() {
             <span className="text-lg font-semibold">iSaaSIT</span>
           </div>
           <nav className="hidden md:flex items-center gap-6">
-            <a href="#features" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            <a
+              href="#features"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
               Features
             </a>
-            <a href="#code" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            <a
+              href="#code"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
               Code
             </a>
-            <a href="#pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            <a
+              href="#pricing"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
               Pricing
             </a>
-            <a href="#faq" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            <a
+              href="#faq"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
               FAQ
             </a>
-            <a href={BLOG_URL} target="_blank" rel="noreferrer" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            <a
+              href={BLOG_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
               Blog
             </a>
           </nav>
@@ -75,9 +110,9 @@ function Home() {
       <main className="flex-1">
         <section className="container mx-auto px-4 pt-24 pb-16 md:pt-32 md:pb-24">
           <div className="mx-auto flex max-w-[64rem] flex-col items-center gap-6 text-center">
-            <a 
-              href="https://github.com/Kieransaunders/iSaaSIT" 
-              target="_blank" 
+            <a
+              href="https://github.com/Kieransaunders/iSaaSIT"
+              target="_blank"
               rel="noreferrer"
               className="inline-flex items-center rounded-full border bg-muted px-3 py-1 text-sm font-medium hover:bg-muted/80 transition-colors"
             >
@@ -93,8 +128,8 @@ function Home() {
               </span>
             </h1>
             <p className="max-w-[42rem] leading-normal text-muted-foreground sm:text-xl sm:leading-8">
-              The open-source starter kit for agencies managing multiple client companies.
-              Data isolation, team assignments, and billing—all pre-configured.
+              The open-source starter kit for agencies managing multiple client companies. Data isolation, team
+              assignments, and billing—all pre-configured.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4">
               <Button size="lg" asChild className="h-12 px-8">
@@ -110,9 +145,7 @@ function Home() {
                 </a>
               </Button>
             </div>
-            <p className="text-sm text-muted-foreground">
-              No credit card required. MIT License.
-            </p>
+            <p className="text-sm text-muted-foreground">No credit card required. MIT License.</p>
           </div>
         </section>
 
@@ -183,9 +216,7 @@ function Home() {
         <section id="code" className="container mx-auto px-4 py-24 bg-muted/50">
           <div className="mx-auto max-w-[64rem]">
             <div className="text-center mb-16">
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
-                Simple, intuitive code
-              </h2>
+              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">Simple, intuitive code</h2>
               <p className="text-lg text-muted-foreground max-w-[42rem] mx-auto">
                 Get started with just a few lines. The hard parts are already solved.
               </p>
@@ -214,7 +245,7 @@ export default defineSchema({
   }),
 });`}
               />
-              <CodePreview 
+              <CodePreview
                 title="Query with live updates"
                 code={`// React Component
 import { useQuery } from "@convex-dev/react-query";
@@ -243,9 +274,7 @@ function CustomerList() {
         <section id="pricing" className="container mx-auto px-4 py-24 md:py-32">
           <div className="mx-auto max-w-[64rem]">
             <div className="text-center mb-16">
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
-                Free forever. No catch.
-              </h2>
+              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">Free forever. No catch.</h2>
               <p className="text-lg text-muted-foreground max-w-[42rem] mx-auto">
                 iSaaSIT is open-source and free to use. You only pay for your own hosting and services.
               </p>
@@ -256,13 +285,13 @@ function CustomerList() {
                 price="Free"
                 description="Everything you need to build and deploy your SaaS."
                 features={[
-                  "Full source code access",
-                  "Multi-tenant architecture",
-                  "WorkOS authentication",
-                  "Convex database",
-                  "Role-based access control",
-                  "Billing integration ready",
-                  "Community support",
+                  'Full source code access',
+                  'Multi-tenant architecture',
+                  'WorkOS authentication',
+                  'Convex database',
+                  'Role-based access control',
+                  'Billing integration ready',
+                  'Community support',
                 ]}
                 cta="Get Started"
                 href={signUpUrl}
@@ -273,11 +302,11 @@ function CustomerList() {
                 price="Free"
                 description="Generous free tier for getting started."
                 features={[
-                  "1M function calls/month",
-                  "5GB storage",
-                  "Real-time sync",
-                  "Automatic scaling",
-                  "Global CDN",
+                  '1M function calls/month',
+                  '5GB storage',
+                  'Real-time sync',
+                  'Automatic scaling',
+                  'Global CDN',
                 ]}
                 cta="View Pricing"
                 href="https://convex.dev/pricing"
@@ -287,11 +316,11 @@ function CustomerList() {
                 price="Free"
                 description="Free tier for up to 1 million users."
                 features={[
-                  "Unlimited users (free tier)",
-                  "Social login",
-                  "Magic links",
-                  "SSO/SAML ready",
-                  "Enterprise security",
+                  'Unlimited users (free tier)',
+                  'Social login',
+                  'Magic links',
+                  'SSO/SAML ready',
+                  'Enterprise security',
                 ]}
                 cta="View Pricing"
                 href="https://workos.com/pricing"
@@ -303,9 +332,7 @@ function CustomerList() {
         {/* Testimonials */}
         <section className="container mx-auto px-4 py-24 border-y bg-muted/30">
           <div className="mx-auto max-w-[64rem]">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl text-center mb-12">
-              Loved by developers
-            </h2>
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl text-center mb-12">Loved by developers</h2>
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
               <TestimonialCard
                 quote="Saved us weeks of dev time. We spun up a client portal for our design agency in one weekend. Clients love having their own login."
@@ -343,7 +370,7 @@ function CustomerList() {
               />
               <FAQItem
                 question="Is iSaaSIT really free?"
-                answer="Yes! iSaaSIT is open-source under the MIT License. You can use it for personal and commercial projects at no cost. You only pay for your own hosting and third-party services (Convex, WorkOS, Lemon Squeezy)."
+                answer="Yes! iSaaSIT is open-source under the MIT License. You can use it for personal and commercial projects at no cost. You only pay for your own hosting and third-party services (Convex, WorkOS, Polar)."
               />
               <FAQItem
                 question="What tech stack does it use?"
@@ -364,12 +391,10 @@ function CustomerList() {
         {/* CTA Section */}
         <section className="container mx-auto px-4 py-24">
           <div className="mx-auto max-w-[64rem] rounded-3xl bg-primary px-6 py-16 text-center text-primary-foreground sm:px-12">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
-              Ready to build your client portal?
-            </h2>
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">Ready to build your client portal?</h2>
             <p className="text-lg opacity-90 mb-8 max-w-[42rem] mx-auto">
-              Join agencies who are launching client portals in days instead of months.
-              No credit card required. Free forever.
+              Join agencies who are launching client portals in days instead of months. No credit card required. Free
+              forever.
             </p>
             <Button size="lg" variant="secondary" asChild className="h-12 px-8">
               <a href={signUpUrl}>
@@ -393,26 +418,71 @@ function CustomerList() {
                 <span className="text-lg font-semibold">iSaaSIT</span>
               </div>
               <p className="text-sm text-muted-foreground max-w-xs">
-                The open-source starter kit for agencies managing client companies.
-                Built with Convex, TanStack Start, and WorkOS.
+                The open-source starter kit for agencies managing client companies. Built with Convex, TanStack Start,
+                and WorkOS.
               </p>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Product</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#features" className="hover:text-foreground transition-colors">Features</a></li>
-                <li><a href="#pricing" className="hover:text-foreground transition-colors">Pricing</a></li>
-                <li><a href={BLOG_URL} className="hover:text-foreground transition-colors">Blog</a></li>
-                <li><a href="https://github.com/Kieransaunders/iSaaSIT" className="hover:text-foreground transition-colors">GitHub</a></li>
+                <li>
+                  <a href="#features" className="hover:text-foreground transition-colors">
+                    Features
+                  </a>
+                </li>
+                <li>
+                  <a href="#pricing" className="hover:text-foreground transition-colors">
+                    Pricing
+                  </a>
+                </li>
+                <li>
+                  <a href={BLOG_URL} className="hover:text-foreground transition-colors">
+                    Blog
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://github.com/Kieransaunders/iSaaSIT"
+                    className="hover:text-foreground transition-colors"
+                  >
+                    GitHub
+                  </a>
+                </li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Resources</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href={DOCS_URL} className="hover:text-foreground transition-colors">Documentation</a></li>
-                <li><a href="https://docs.convex.dev" target="_blank" rel="noreferrer" className="hover:text-foreground transition-colors">Convex Docs</a></li>
-                <li><a href="https://workos.com/docs" target="_blank" rel="noreferrer" className="hover:text-foreground transition-colors">WorkOS Docs</a></li>
-                <li><a href="#faq" className="hover:text-foreground transition-colors">FAQ</a></li>
+                <li>
+                  <a href={DOCS_URL} className="hover:text-foreground transition-colors">
+                    Documentation
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://docs.convex.dev"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hover:text-foreground transition-colors"
+                  >
+                    Convex Docs
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://workos.com/docs"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hover:text-foreground transition-colors"
+                  >
+                    WorkOS Docs
+                  </a>
+                </li>
+                <li>
+                  <a href="#faq" className="hover:text-foreground transition-colors">
+                    FAQ
+                  </a>
+                </li>
               </ul>
             </div>
           </div>
@@ -421,10 +491,20 @@ function CustomerList() {
               © {new Date().getFullYear()} iSaaSIT. Open source under MIT License.
             </p>
             <div className="flex items-center gap-4">
-              <a href="https://github.com/Kieransaunders/iSaaSIT" target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
+              <a
+                href="https://github.com/Kieransaunders/iSaaSIT"
+                target="_blank"
+                rel="noreferrer"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
                 <Github className="h-5 w-5" />
               </a>
-              <a href="https://twitter.com" target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
+              <a
+                href="https://twitter.com"
+                target="_blank"
+                rel="noreferrer"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
                 <Twitter className="h-5 w-5" />
               </a>
             </div>
@@ -456,7 +536,9 @@ function AuthenticatedHome() {
           </div>
           <div className="flex items-center gap-4">
             <Button variant="ghost" asChild>
-              <a href={BLOG_URL} target="_blank" rel="noreferrer">Blog</a>
+              <a href={BLOG_URL} target="_blank" rel="noreferrer">
+                Blog
+              </a>
             </Button>
             <ModeToggle />
             <Button asChild>
@@ -574,7 +656,11 @@ function PricingCard({
         ))}
       </ul>
       <Button className="w-full" variant={highlighted ? 'default' : 'outline'} asChild>
-        <a href={href} target={href.startsWith('http') ? '_blank' : undefined} rel={href.startsWith('http') ? 'noreferrer' : undefined}>
+        <a
+          href={href}
+          target={href.startsWith('http') ? '_blank' : undefined}
+          rel={href.startsWith('http') ? 'noreferrer' : undefined}
+        >
           {cta}
         </a>
       </Button>
@@ -582,15 +668,7 @@ function PricingCard({
   );
 }
 
-function TestimonialCard({
-  quote,
-  author,
-  role,
-}: {
-  quote: string;
-  author: string;
-  role: string;
-}) {
+function TestimonialCard({ quote, author, role }: { quote: string; author: string; role: string }) {
   return (
     <div className="rounded-xl border bg-card p-6 text-card-foreground shadow-sm">
       <p className="text-muted-foreground mb-4 leading-relaxed">&ldquo;{quote}&rdquo;</p>
