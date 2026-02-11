@@ -1,21 +1,19 @@
-import { httpRouter } from "convex/server";
-import { handleWorkOSWebhook } from "./webhooks/workos";
-import { handleWebhook } from "./lemonsqueezy/webhook";
+import { httpRouter } from 'convex/server';
+import { polar } from './polar';
+import { handleWorkOSWebhook } from './webhooks/workos';
 
 const http = httpRouter();
 
 // WorkOS webhook endpoint
 http.route({
-  path: "/webhooks/workos",
-  method: "POST",
+  path: '/webhooks/workos',
+  method: 'POST',
   handler: handleWorkOSWebhook,
 });
 
-// Lemon Squeezy webhook endpoint
-http.route({
-  path: "/lemonsqueezy/webhook",
-  method: "POST",
-  handler: handleWebhook,
+// Polar webhook endpoint
+polar.registerRoutes(http, {
+  path: '/polar/events',
 });
 
 export default http;

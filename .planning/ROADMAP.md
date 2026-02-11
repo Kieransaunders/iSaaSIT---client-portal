@@ -2,16 +2,17 @@
 
 **Created:** 2025-02-04  
 **Last Updated:** 2026-02-10  
-**Current Focus:** Phase 3 In Progress — Billing + v1 ship blockers  
+**Current Focus:** Phase 4 Planned — Polar migration  
 **Overall Progress:** 26/32 requirements complete (81%)
 
 ## Overview
 
-| Phase | Name | Goal | Status | Progress |
-|-------|------|------|--------|----------|
-| 1 | WorkOS Integration ✓ | Real org creation with WorkOS API | ✓ Complete | 100% |
-| 2 | Team Management | Invite users and manage assignments | In Progress | 80% |
-| 3 | Billing | Lemon Squeezy subscription integration | In Progress | 40% |
+| Phase | Name                 | Goal                                     | Status      | Progress |
+| ----- | -------------------- | ---------------------------------------- | ----------- | -------- |
+| 1     | WorkOS Integration ✓ | Real org creation with WorkOS API        | ✓ Complete  | 100%     |
+| 2     | Team Management      | Invite users and manage assignments      | In Progress | 80%      |
+| 3     | Billing              | Lemon Squeezy subscription integration   | In Progress | 40%      |
+| 4     | Polar Migration      | Replace Lemon Squeezy with Polar billing | Planned     | 0%       |
 
 ---
 
@@ -19,14 +20,16 @@
 
 **Goal:** Replace mock org ID with real WorkOS API calls  
 **Status:** ✓ Complete (2026-02-09)  
-**Verified:** 12/12 must-haves passed  
+**Verified:** 12/12 must-haves passed
 
 **Plans:** 3 plans (3 complete)
+
 - [x] 01-01-PLAN.md - WorkOS SDK setup + org creation action
 - [x] 01-02-PLAN.md - Onboarding flow with billing email
 - [x] 01-03-PLAN.md - Settings page with live org data
 
 **Requirements:**
+
 - ORG-03: Org creation calls WorkOS API (not mock ID)
 - ORG-04: User can view org settings
 
@@ -38,6 +41,7 @@
 **Status:** ✓ Complete (2026-02-10) — 5 of 5 plans complete (100%)
 
 **Plans:** 5 plans
+
 - [x] 02-01-PLAN.md — Schema + invitation backend (send, revoke, resend)
 - [x] 02-02-PLAN.md — Staff assignment backend + customer detail UI
 - [x] 02-03-PLAN.md — Webhook handler + user management backend
@@ -45,6 +49,7 @@
 - [x] 02-05-PLAN.md — End-to-end verification checkpoint + bug fixes
 
 **Requirements:**
+
 - TEAM-01: Admin can invite staff users
 - TEAM-02: Admin can invite client users linked to customer
 - TEAM-03: Staff/Client receives email invite
@@ -63,6 +68,7 @@
 **Status:** 3 of 6 plans complete (50%)
 
 **Plans:** 6 plans
+
 - [x] 03-01-PLAN.md — Webhook handler + signature verification + subscription sync
 - [x] 03-02-PLAN.md — Checkout action + cancel action + billing usage queries
 - [ ] 03-03-PLAN.md — Billing page UI with real data + checkout overlay
@@ -71,6 +77,7 @@
 - [x] 03-06-PLAN.md — Gap closure: InviteDialog CapReachedBanner upgrade prompt
 
 **Requirements:**
+
 - BILL-01: Org has subscription status synced from Lemon Squeezy
 - BILL-02: Admin can upgrade via Lemon Squeezy checkout
 - BILL-03: Webhook handler processes subscription events
@@ -79,6 +86,24 @@
 - BILL-06: Billing page shows real usage from Convex
 
 **Blocker:** Real Lemon Squeezy checkout + webhook verification pending (test mode)
+
+---
+
+## Phase 4: Polar Migration (Planned)
+
+**Goal:** Replace Lemon Squeezy billing with Polar component integration and updated docs  
+**Status:** Planned (2026-02-11)
+
+**Plans:** 2 plans
+
+- [ ] 04-01-PLAN.md — Polar backend integration and Lemon Squeezy removal
+- [ ] 04-02-PLAN.md — Billing UI + docs migration to Polar
+
+**Requirements:**
+
+- Replace Lemon Squeezy backend/webhooks with Polar component
+- Update billing UI to use Polar checkout and portal
+- Update docs, README, and env setup to Polar
 
 ---
 
@@ -109,5 +134,6 @@
 - [ ] Run v1 smoke test checklist and update requirement statuses
 
 ---
-*Roadmap created: 2025-02-04*
-*Last updated: 2026-02-10*
+
+_Roadmap created: 2025-02-04_
+_Last updated: 2026-02-10_

@@ -1,6 +1,8 @@
-import { ConvexError, v  } from "convex/values";
-import { mutation, query } from "../_generated/server";
-import type { Id } from "../_generated/dataModel";
+import { ConvexError, v } from 'convex/values';
+import { mutation, query } from '../_generated/server';
+import { getLimitsForSubscription } from '../billing/plans';
+import { polar } from '../polar';
+import type { Id } from '../_generated/dataModel';
 
 /**
  * List all customers for the current user's org
@@ -11,49 +13,47 @@ export const listCustomers = query({
   handler: async (ctx) => {
     const user = await ctx.auth.getUserIdentity();
     if (!user) {
-      throw new ConvexError("Not authenticated");
+      throw new ConvexError('Not authenticated');
     }
 
     const workosUserId = user.subject;
 
     // Get user record with role and org
     const userRecord = await ctx.db
-      .query("users")
-      .withIndex("by_workos_user_id", (q) => q.eq("workosUserId", workosUserId))
+      .query('users')
+      .withIndex('by_workos_user_id', (q) => q.eq('workosUserId', workosUserId))
       .first();
 
     if (!userRecord?.orgId) {
-      throw new ConvexError("User not associated with an organization");
+      throw new ConvexError('User not associated with an organization');
     }
     const orgId = userRecord.orgId;
     const role = userRecord.role;
 
     // Role-based data scoping
-    if (role === "admin") {
+    if (role === 'admin') {
       // Admin sees all customers in org
       const customers = await ctx.db
-        .query("customers")
-        .withIndex("by_org", (q) => q.eq("orgId", orgId))
+        .query('customers')
+        .withIndex('by_org', (q) => q.eq('orgId', orgId))
         .collect();
       return customers;
-    } else if (role === "staff") {
+    } else if (role === 'staff') {
       // Staff sees only assigned customers
       const assignments = await ctx.db
-        .query("staffCustomerAssignments")
-        .withIndex("by_staff", (q) => q.eq("staffUserId", userRecord._id))
+        .query('staffCustomerAssignments')
+        .withIndex('by_staff', (q) => q.eq('staffUserId', userRecord._id))
         .collect();
 
       const customerIds = assignments.map((a) => a.customerId);
-      const customers = await Promise.all(
-        customerIds.map((id) => ctx.db.get("customers", id))
-      );
+      const customers = await Promise.all(customerIds.map((id) => ctx.db.get('customers', id)));
       return customers.filter((c): c is NonNullable<typeof c> => c !== null);
-    } else if (role === "client") {
+    } else if (role === 'client') {
       // Client sees only their own customer
       if (!userRecord.customerId) {
         return [];
       }
-      const customer = await ctx.db.get("customers", userRecord.customerId);
+      const customer = await ctx.db.get('customers', userRecord.customerId);
       return customer ? [customer] : [];
     }
 
@@ -67,55 +67,53 @@ export const listCustomers = query({
  */
 export const getCustomer = query({
   args: {
-    customerId: v.id("customers"),
+    customerId: v.id('customers'),
   },
   handler: async (ctx, args) => {
     const user = await ctx.auth.getUserIdentity();
     if (!user) {
-      throw new ConvexError("Not authenticated");
+      throw new ConvexError('Not authenticated');
     }
 
     const workosUserId = user.subject;
 
     // Get user record
     const userRecord = await ctx.db
-      .query("users")
-      .withIndex("by_workos_user_id", (q) => q.eq("workosUserId", workosUserId))
+      .query('users')
+      .withIndex('by_workos_user_id', (q) => q.eq('workosUserId', workosUserId))
       .first();
 
     if (!userRecord?.orgId) {
-      throw new ConvexError("User not associated with an organization");
+      throw new ConvexError('User not associated with an organization');
     }
     const orgId = userRecord.orgId;
 
     // Get the customer
-    const customer = await ctx.db.get("customers", args.customerId);
+    const customer = await ctx.db.get('customers', args.customerId);
     if (!customer) {
-      throw new ConvexError("Customer not found");
+      throw new ConvexError('Customer not found');
     }
 
     // Verify customer belongs to user's org
     if (customer.orgId !== orgId) {
-      throw new ConvexError("Access denied");
+      throw new ConvexError('Access denied');
     }
 
     // Role-based access check
     const role = userRecord.role;
-    if (role === "staff") {
+    if (role === 'staff') {
       // Check if staff is assigned to this customer
       const assignment = await ctx.db
-        .query("staffCustomerAssignments")
-        .withIndex("by_staff_customer", (q) =>
-          q.eq("staffUserId", userRecord._id).eq("customerId", args.customerId)
-        )
+        .query('staffCustomerAssignments')
+        .withIndex('by_staff_customer', (q) => q.eq('staffUserId', userRecord._id).eq('customerId', args.customerId))
         .first();
       if (!assignment) {
-        throw new ConvexError("Access denied - not assigned to this customer");
+        throw new ConvexError('Access denied - not assigned to this customer');
       }
-    } else if (role === "client") {
+    } else if (role === 'client') {
       // Client can only access their own customer
       if (userRecord.customerId !== args.customerId) {
-        throw new ConvexError("Access denied");
+        throw new ConvexError('Access denied');
       }
     }
 
@@ -136,51 +134,59 @@ export const createCustomer = mutation({
   handler: async (ctx, args) => {
     const user = await ctx.auth.getUserIdentity();
     if (!user) {
-      throw new ConvexError("Not authenticated");
+      throw new ConvexError('Not authenticated');
     }
 
     const workosUserId = user.subject;
 
     // Get user record
     const userRecord = await ctx.db
-      .query("users")
-      .withIndex("by_workos_user_id", (q) => q.eq("workosUserId", workosUserId))
+      .query('users')
+      .withIndex('by_workos_user_id', (q) => q.eq('workosUserId', workosUserId))
       .first();
 
     if (!userRecord?.orgId) {
-      throw new ConvexError("User not associated with an organization");
+      throw new ConvexError('User not associated with an organization');
     }
 
     // Check permission (only admin and staff can create customers)
     const role = userRecord.role;
-    if (role !== "admin" && role !== "staff") {
-      throw new ConvexError("Permission denied");
+    if (role !== 'admin' && role !== 'staff') {
+      throw new ConvexError('Permission denied');
     }
 
     const orgId = userRecord.orgId;
 
-    // Get org to check limits
-    const org = await ctx.db.get("orgs", orgId);
+    // Get org to validate access
+    const org = await ctx.db.get('orgs', orgId);
     if (!org) {
-      throw new ConvexError("Organization not found");
+      throw new ConvexError('Organization not found');
     }
+
+    const subscription = await polar.getCurrentSubscription(ctx, {
+      userId: userRecord._id,
+    });
+    const limits = getLimitsForSubscription({
+      status: subscription?.status ?? 'inactive',
+      productKey: subscription?.productKey,
+    });
 
     // Count existing customers
     const existingCustomers = await ctx.db
-      .query("customers")
-      .withIndex("by_org", (q) => q.eq("orgId", orgId))
+      .query('customers')
+      .withIndex('by_org', (q) => q.eq('orgId', orgId))
       .collect();
 
     // Enforce usage limit
-    if (existingCustomers.length >= org.maxCustomers) {
+    if (existingCustomers.length >= limits.maxCustomers) {
       throw new ConvexError(
-        `Customer limit reached. Maximum ${org.maxCustomers} customers allowed on your plan. Upgrade to add more.`
+        `Customer limit reached. Maximum ${limits.maxCustomers} customers allowed on your plan. Upgrade to add more.`,
       );
     }
 
     // Create the customer
     const now = Date.now();
-    const customerId = await ctx.db.insert("customers", {
+    const customerId = await ctx.db.insert('customers', {
       orgId,
       name: args.name,
       email: args.email,
@@ -190,8 +196,8 @@ export const createCustomer = mutation({
     });
 
     // If staff created the customer, auto-assign them to it
-    if (role === "staff") {
-      await ctx.db.insert("staffCustomerAssignments", {
+    if (role === 'staff') {
+      await ctx.db.insert('staffCustomerAssignments', {
         staffUserId: userRecord._id,
         customerId,
         orgId,
@@ -208,7 +214,7 @@ export const createCustomer = mutation({
  */
 export const updateCustomer = mutation({
   args: {
-    customerId: v.id("customers"),
+    customerId: v.id('customers'),
     name: v.optional(v.string()),
     email: v.optional(v.string()),
     notes: v.optional(v.string()),
@@ -216,49 +222,47 @@ export const updateCustomer = mutation({
   handler: async (ctx, args) => {
     const user = await ctx.auth.getUserIdentity();
     if (!user) {
-      throw new ConvexError("Not authenticated");
+      throw new ConvexError('Not authenticated');
     }
 
     const workosUserId = user.subject;
 
     // Get user record
     const userRecord = await ctx.db
-      .query("users")
-      .withIndex("by_workos_user_id", (q) => q.eq("workosUserId", workosUserId))
+      .query('users')
+      .withIndex('by_workos_user_id', (q) => q.eq('workosUserId', workosUserId))
       .first();
 
     if (!userRecord?.orgId) {
-      throw new ConvexError("User not associated with an organization");
+      throw new ConvexError('User not associated with an organization');
     }
     const orgId = userRecord.orgId;
 
     // Get the customer
-    const customer = await ctx.db.get("customers", args.customerId);
+    const customer = await ctx.db.get('customers', args.customerId);
     if (!customer) {
-      throw new ConvexError("Customer not found");
+      throw new ConvexError('Customer not found');
     }
 
     // Verify customer belongs to user's org
     if (customer.orgId !== orgId) {
-      throw new ConvexError("Access denied");
+      throw new ConvexError('Access denied');
     }
 
     // Check permissions
     const role = userRecord.role;
-    if (role === "client") {
-      throw new ConvexError("Clients cannot update customer details");
+    if (role === 'client') {
+      throw new ConvexError('Clients cannot update customer details');
     }
 
-    if (role === "staff") {
+    if (role === 'staff') {
       // Check if staff is assigned to this customer
       const assignment = await ctx.db
-        .query("staffCustomerAssignments")
-        .withIndex("by_staff_customer", (q) =>
-          q.eq("staffUserId", userRecord._id).eq("customerId", args.customerId)
-        )
+        .query('staffCustomerAssignments')
+        .withIndex('by_staff_customer', (q) => q.eq('staffUserId', userRecord._id).eq('customerId', args.customerId))
         .first();
       if (!assignment) {
-        throw new ConvexError("Access denied - not assigned to this customer");
+        throw new ConvexError('Access denied - not assigned to this customer');
       }
     }
 
@@ -271,7 +275,7 @@ export const updateCustomer = mutation({
     if (args.email !== undefined) updateData.email = args.email;
     if (args.notes !== undefined) updateData.notes = args.notes;
 
-    await ctx.db.patch("customers", args.customerId, updateData);
+    await ctx.db.patch('customers', args.customerId, updateData);
 
     return args.customerId;
   },
@@ -283,93 +287,88 @@ export const updateCustomer = mutation({
  */
 export const deleteCustomer = mutation({
   args: {
-    customerId: v.id("customers"),
+    customerId: v.id('customers'),
   },
   handler: async (ctx, args) => {
     const user = await ctx.auth.getUserIdentity();
     if (!user) {
-      throw new ConvexError("Not authenticated");
+      throw new ConvexError('Not authenticated');
     }
 
     const workosUserId = user.subject;
 
     // Get user record
     const userRecord = await ctx.db
-      .query("users")
-      .withIndex("by_workos_user_id", (q) => q.eq("workosUserId", workosUserId))
+      .query('users')
+      .withIndex('by_workos_user_id', (q) => q.eq('workosUserId', workosUserId))
       .first();
 
     if (!userRecord?.orgId) {
-      throw new ConvexError("User not associated with an organization");
+      throw new ConvexError('User not associated with an organization');
     }
     const orgId = userRecord.orgId;
 
     // Only admins can delete customers
-    if (userRecord.role !== "admin") {
-      throw new ConvexError("Only admins can delete customers");
+    if (userRecord.role !== 'admin') {
+      throw new ConvexError('Only admins can delete customers');
     }
 
     // Get the customer
-    const customer = await ctx.db.get("customers", args.customerId);
+    const customer = await ctx.db.get('customers', args.customerId);
     if (!customer) {
-      throw new ConvexError("Customer not found");
+      throw new ConvexError('Customer not found');
     }
 
     // Verify customer belongs to user's org
     if (customer.orgId !== userRecord.orgId) {
-      throw new ConvexError("Access denied");
+      throw new ConvexError('Access denied');
     }
 
     const clientUsers = await ctx.db
-      .query("users")
-      .withIndex("by_customer", (q) => q.eq("customerId", args.customerId))
+      .query('users')
+      .withIndex('by_customer', (q) => q.eq('customerId', args.customerId))
       .collect();
 
-    const activeClientUsers = clientUsers.filter(
-      (clientUser) => clientUser.role === "client" && !clientUser.deletedAt
-    );
+    const activeClientUsers = clientUsers.filter((clientUser) => clientUser.role === 'client' && !clientUser.deletedAt);
 
     const pendingInvitations = await ctx.db
-      .query("pendingInvitations")
-      .withIndex("by_org", (q) => q.eq("orgId", orgId))
+      .query('pendingInvitations')
+      .withIndex('by_org', (q) => q.eq('orgId', orgId))
       .collect();
 
     const pendingClientInvitations = pendingInvitations.filter(
-      (invitation) =>
-        invitation.role === "client" && invitation.customerId === args.customerId
+      (invitation) => invitation.role === 'client' && invitation.customerId === args.customerId,
     );
 
     if (activeClientUsers.length > 0 || pendingClientInvitations.length > 0) {
       const parts: string[] = [];
 
       if (activeClientUsers.length > 0) {
-        parts.push(
-          `${activeClientUsers.length} active client user${activeClientUsers.length === 1 ? "" : "s"}`
-        );
+        parts.push(`${activeClientUsers.length} active client user${activeClientUsers.length === 1 ? '' : 's'}`);
       }
 
       if (pendingClientInvitations.length > 0) {
         parts.push(
-          `${pendingClientInvitations.length} pending client invitation${pendingClientInvitations.length === 1 ? "" : "s"}`
+          `${pendingClientInvitations.length} pending client invitation${pendingClientInvitations.length === 1 ? '' : 's'}`,
         );
       }
 
       throw new ConvexError(
-        `Cannot delete customer while it has ${parts.join(" and ")}. Remove or reassign them first.`
+        `Cannot delete customer while it has ${parts.join(' and ')}. Remove or reassign them first.`,
       );
     }
 
     // Delete the customer
-    await ctx.db.delete("customers", args.customerId);
+    await ctx.db.delete('customers', args.customerId);
 
     // Clean up staff assignments
     const assignments = await ctx.db
-      .query("staffCustomerAssignments")
-      .withIndex("by_customer", (q) => q.eq("customerId", args.customerId))
+      .query('staffCustomerAssignments')
+      .withIndex('by_customer', (q) => q.eq('customerId', args.customerId))
       .collect();
 
     for (const assignment of assignments) {
-      await ctx.db.delete("staffCustomerAssignments", assignment._id);
+      await ctx.db.delete('staffCustomerAssignments', assignment._id);
     }
 
     return args.customerId;
@@ -384,44 +383,52 @@ export const getCustomerUsage = query({
   handler: async (ctx) => {
     const user = await ctx.auth.getUserIdentity();
     if (!user) {
-      throw new ConvexError("Not authenticated");
+      throw new ConvexError('Not authenticated');
     }
 
     const workosUserId = user.subject;
 
     // Get user record
     const userRecord = await ctx.db
-      .query("users")
-      .withIndex("by_workos_user_id", (q) => q.eq("workosUserId", workosUserId))
+      .query('users')
+      .withIndex('by_workos_user_id', (q) => q.eq('workosUserId', workosUserId))
       .first();
 
     if (!userRecord?.orgId) {
-      throw new ConvexError("User not associated with an organization");
+      throw new ConvexError('User not associated with an organization');
     }
 
     if (!userRecord.orgId) {
-      throw new ConvexError("User not associated with an organization");
+      throw new ConvexError('User not associated with an organization');
     }
 
-    // Get org limits
-    const org = await ctx.db.get("orgs", userRecord.orgId);
+    // Get org to validate access
+    const org = await ctx.db.get('orgs', userRecord.orgId);
     if (!org) {
-      throw new ConvexError("Organization not found");
+      throw new ConvexError('Organization not found');
     }
+
+    const subscription = await polar.getCurrentSubscription(ctx, {
+      userId: userRecord._id,
+    });
+    const limits = getLimitsForSubscription({
+      status: subscription?.status ?? 'inactive',
+      productKey: subscription?.productKey,
+    });
 
     const orgId = userRecord.orgId;
 
     // Count customers
     const customers = await ctx.db
-      .query("customers")
-      .withIndex("by_org", (q) => q.eq("orgId", orgId))
+      .query('customers')
+      .withIndex('by_org', (q) => q.eq('orgId', orgId))
       .collect();
 
     return {
       count: customers.length,
-      max: org.maxCustomers,
-      remaining: Math.max(0, org.maxCustomers - customers.length),
-      atLimit: customers.length >= org.maxCustomers,
+      max: limits.maxCustomers,
+      remaining: Math.max(0, limits.maxCustomers - customers.length),
+      atLimit: customers.length >= limits.maxCustomers,
     };
   },
 });

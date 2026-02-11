@@ -1,9 +1,10 @@
-"use node";
+'use node';
 
-import { WorkOS } from "@workos-inc/node";
-import { ConvexError, v } from "convex/values";
-import { action } from "../_generated/server";
-import { internal } from "../_generated/api";
+import { WorkOS } from '@workos-inc/node';
+import { ConvexError, v } from 'convex/values';
+import { action } from '../_generated/server';
+import { api, internal } from '../_generated/api';
+import { getLimitsForSubscription } from '../billing/plans';
 
 /**
  * Send an invitation to join the organization via WorkOS
@@ -11,14 +12,14 @@ import { internal } from "../_generated/api";
 export const sendInvitation = action({
   args: {
     email: v.string(),
-    role: v.union(v.literal("staff"), v.literal("client")),
-    customerId: v.optional(v.id("customers")),
+    role: v.union(v.literal('staff'), v.literal('client')),
+    customerId: v.optional(v.id('customers')),
   },
   handler: async (ctx, args) => {
     // Get authenticated user
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
-      throw new ConvexError("Not authenticated");
+      throw new ConvexError('Not authenticated');
     }
 
     const workosUserId = identity.subject;
@@ -29,15 +30,15 @@ export const sendInvitation = action({
     });
 
     if (!userRecord) {
-      throw new ConvexError("User record not found");
+      throw new ConvexError('User record not found');
     }
 
-    if (userRecord.role !== "admin") {
-      throw new ConvexError("Admin role required to send invitations");
+    if (userRecord.role !== 'admin') {
+      throw new ConvexError('Admin role required to send invitations');
     }
 
     if (!userRecord.orgId) {
-      throw new ConvexError("User not in organization");
+      throw new ConvexError('User not in organization');
     }
 
     // Get org details
@@ -46,18 +47,18 @@ export const sendInvitation = action({
     });
 
     if (!org) {
-      throw new ConvexError("Organization not found");
+      throw new ConvexError('Organization not found');
     }
 
     // Validate: if role is client, customerId MUST be provided
-    if (args.role === "client" && !args.customerId) {
-      throw new ConvexError("Customer ID required for client invitations");
+    if (args.role === 'client' && !args.customerId) {
+      throw new ConvexError('Customer ID required for client invitations');
     }
 
     const email = args.email.trim();
 
     if (!email) {
-      throw new ConvexError("Email is required");
+      throw new ConvexError('Email is required');
     }
 
     // Prevent sending to existing members
@@ -67,22 +68,19 @@ export const sendInvitation = action({
     });
 
     if (isExistingMember) {
-      throw new ConvexError("User already a member of this organization");
+      throw new ConvexError('User already a member of this organization');
     }
 
     // Prevent duplicate pending invitations
-    const existingInvitation = await ctx.runQuery(
-      internal.invitations.internal.getPendingInvitationByEmail,
-      {
-        orgId: userRecord.orgId,
-        email,
-      }
-    );
+    const existingInvitation = await ctx.runQuery(internal.invitations.internal.getPendingInvitationByEmail, {
+      orgId: userRecord.orgId,
+      email,
+    });
 
     if (existingInvitation) {
       const now = Date.now();
       if (existingInvitation.expiresAt > now) {
-        throw new ConvexError("An invitation is already pending for this email");
+        throw new ConvexError('An invitation is already pending for this email');
       }
 
       await ctx.runMutation(internal.invitations.internal.deletePendingInvitation, {
@@ -94,35 +92,38 @@ export const sendInvitation = action({
     const counts = await ctx.runQuery(internal.invitations.internal.getOrgUserCounts, {
       orgId: userRecord.orgId,
     });
+    const subscription = await ctx.runQuery(api.polar.getCurrentSubscription, {});
+    const limits = getLimitsForSubscription({
+      status: subscription?.status ?? 'inactive',
+      productKey: subscription?.productKey,
+    });
 
-    if (args.role === "staff") {
-      if (counts.staffCount + counts.pendingStaffCount >= org.maxStaff) {
+    if (args.role === 'staff') {
+      if (counts.staffCount + counts.pendingStaffCount >= limits.maxStaff) {
         throw new ConvexError(
-          `Staff limit reached (${org.maxStaff}). Upgrade your plan to invite more staff members.`
+          `Staff limit reached (${limits.maxStaff}). Upgrade your plan to invite more staff members.`,
         );
       }
-    } else if (args.role === "client") {
-      if (counts.clientCount + counts.pendingClientCount >= org.maxClients) {
-        throw new ConvexError(
-          `Client limit reached (${org.maxClients}). Upgrade your plan to invite more clients.`
-        );
+    } else if (args.role === 'client') {
+      if (counts.clientCount + counts.pendingClientCount >= limits.maxClients) {
+        throw new ConvexError(`Client limit reached (${limits.maxClients}). Upgrade your plan to invite more clients.`);
       }
     }
 
     // If client role, verify customer exists
-    if (args.role === "client" && args.customerId) {
+    if (args.role === 'client' && args.customerId) {
       const customer = await ctx.runQuery(internal.invitations.internal.getCustomer, {
         customerId: args.customerId,
         orgId: userRecord.orgId,
       });
 
       if (!customer) {
-        throw new ConvexError("Customer not found or does not belong to your organization");
+        throw new ConvexError('Customer not found or does not belong to your organization');
       }
     }
 
     let invitation;
-    
+
     try {
       // Initialize WorkOS client
       const workos = new WorkOS(process.env.WORKOS_API_KEY);
@@ -161,10 +162,10 @@ export const sendInvitation = action({
           // Ignore cleanup errors
         }
       }
-      
-      const message = error instanceof Error ? error.message : "Unknown error";
-      if (message.toLowerCase().includes("already a member of organization")) {
-        throw new ConvexError("User already a member of this organization");
+
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      if (message.toLowerCase().includes('already a member of organization')) {
+        throw new ConvexError('User already a member of this organization');
       }
 
       throw new ConvexError(`Failed to send invitation: ${message}`);

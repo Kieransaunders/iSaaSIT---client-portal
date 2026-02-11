@@ -1,18 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
   <style>
     .icon { stroke: #0f172a; }
     @media (prefers-color-scheme: dark) {
       .icon { stroke: #f8fafc; }
     }
   </style>
-  <!-- Background for visibility -->
-  <rect x="0" y="0" width="100" height="100" rx="16" fill="none"/>
   
-  <!-- Main squares intersecting pattern -->
-  <g class="icon" transform="translate(10, 10) scale(3.5)">
-    <!-- Top square -->
-    <rect x="4" y="4" width="14" height="14" rx="2"/>
-    <!-- Bottom square (offset) -->
-    <rect x="10" y="10" width="14" height="14" rx="2"/>
+  <!-- Main squares intersecting pattern - centered -->
+  <g class="icon" transform="translate(15, 15) scale(2.5)">
+    <!-- Top-left square -->
+    <rect x="4" y="4" width="14" height="14" rx="3"/>
+    <!-- Bottom-right square (offset for intersection) -->
+    <rect x="10" y="10" width="14" height="14" rx="3"/>
   </g>
 </svg>

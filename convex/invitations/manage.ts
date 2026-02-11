@@ -1,12 +1,13 @@
-"use node";
+'use node';
 
-import { WorkOS } from "@workos-inc/node";
-import { ConvexError, v } from "convex/values";
-import { action } from "../_generated/server";
-import { internal } from "../_generated/api";
+import { WorkOS } from '@workos-inc/node';
+import { ConvexError, v } from 'convex/values';
+import { action } from '../_generated/server';
+import { api, internal } from '../_generated/api';
+import { getLimitsForSubscription } from '../billing/plans';
 
 function getWorkOSErrorStatus(error: unknown): number | undefined {
-  if (!error || typeof error !== "object") {
+  if (!error || typeof error !== 'object') {
     return undefined;
   }
 
@@ -19,10 +20,10 @@ function getWorkOSErrorStatus(error: unknown): number | undefined {
   const values = [candidate.status, candidate.statusCode, candidate.response?.status];
 
   for (const value of values) {
-    if (typeof value === "number") {
+    if (typeof value === 'number') {
       return value;
     }
-    if (typeof value === "string" && /^\d{3}$/.test(value)) {
+    if (typeof value === 'string' && /^\d{3}$/.test(value)) {
       return Number(value);
     }
   }
@@ -36,13 +37,13 @@ function isInvitationTerminalStateError(error: unknown): boolean {
     return true;
   }
 
-  const message = error instanceof Error ? error.message.toLowerCase() : "";
+  const message = error instanceof Error ? error.message.toLowerCase() : '';
   return (
-    message.includes("accepted") ||
-    message.includes("revoked") ||
-    message.includes("expired") ||
-    message.includes("not found") ||
-    message.includes("not pending")
+    message.includes('accepted') ||
+    message.includes('revoked') ||
+    message.includes('expired') ||
+    message.includes('not found') ||
+    message.includes('not pending')
   );
 }
 
@@ -51,13 +52,13 @@ function isInvitationTerminalStateError(error: unknown): boolean {
  */
 export const revokeInvitation = action({
   args: {
-    invitationId: v.id("pendingInvitations"),
+    invitationId: v.id('pendingInvitations'),
   },
   handler: async (ctx, args) => {
     // Get authenticated user
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
-      throw new ConvexError("Not authenticated");
+      throw new ConvexError('Not authenticated');
     }
 
     const workosUserId = identity.subject;
@@ -68,15 +69,15 @@ export const revokeInvitation = action({
     });
 
     if (!userRecord) {
-      throw new ConvexError("User record not found");
+      throw new ConvexError('User record not found');
     }
 
-    if (userRecord.role !== "admin") {
-      throw new ConvexError("Admin role required to revoke invitations");
+    if (userRecord.role !== 'admin') {
+      throw new ConvexError('Admin role required to revoke invitations');
     }
 
     if (!userRecord.orgId) {
-      throw new ConvexError("User not in organization");
+      throw new ConvexError('User not in organization');
     }
 
     // Get the pending invitation
@@ -85,12 +86,12 @@ export const revokeInvitation = action({
     });
 
     if (!invitation) {
-      throw new ConvexError("Invitation not found");
+      throw new ConvexError('Invitation not found');
     }
 
     // Verify invitation belongs to user's org
     if (invitation.orgId !== userRecord.orgId) {
-      throw new ConvexError("Invitation does not belong to your organization");
+      throw new ConvexError('Invitation does not belong to your organization');
     }
 
     const isExistingMember = await ctx.runQuery(internal.invitations.internal.isOrgMemberByEmail, {
@@ -112,7 +113,7 @@ export const revokeInvitation = action({
       let requiresRevoke = true;
       try {
         const workosInvitation = await workos.userManagement.getInvitation(invitation.workosInvitationId);
-        requiresRevoke = workosInvitation.state === "pending";
+        requiresRevoke = workosInvitation.state === 'pending';
       } catch (error) {
         // If the invite no longer exists or is in a terminal state, local cleanup is sufficient.
         if (!isInvitationTerminalStateError(error)) {
@@ -139,7 +140,7 @@ export const revokeInvitation = action({
 
       return { success: true, cleanedUp: false };
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unknown error";
+      const message = error instanceof Error ? error.message : 'Unknown error';
       throw new ConvexError(`Failed to revoke invitation: ${message}`);
     }
   },
@@ -150,13 +151,13 @@ export const revokeInvitation = action({
  */
 export const resendInvitation = action({
   args: {
-    invitationId: v.id("pendingInvitations"),
+    invitationId: v.id('pendingInvitations'),
   },
   handler: async (ctx, args) => {
     // Get authenticated user
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
-      throw new ConvexError("Not authenticated");
+      throw new ConvexError('Not authenticated');
     }
 
     const workosUserId = identity.subject;
@@ -167,15 +168,15 @@ export const resendInvitation = action({
     });
 
     if (!userRecord) {
-      throw new ConvexError("User record not found");
+      throw new ConvexError('User record not found');
     }
 
-    if (userRecord.role !== "admin") {
-      throw new ConvexError("Admin role required to resend invitations");
+    if (userRecord.role !== 'admin') {
+      throw new ConvexError('Admin role required to resend invitations');
     }
 
     if (!userRecord.orgId) {
-      throw new ConvexError("User not in organization");
+      throw new ConvexError('User not in organization');
     }
 
     // Get org details
@@ -184,7 +185,7 @@ export const resendInvitation = action({
     });
 
     if (!org) {
-      throw new ConvexError("Organization not found");
+      throw new ConvexError('Organization not found');
     }
 
     // Get the pending invitation
@@ -193,12 +194,12 @@ export const resendInvitation = action({
     });
 
     if (!invitation) {
-      throw new ConvexError("Invitation not found");
+      throw new ConvexError('Invitation not found');
     }
 
     // Verify invitation belongs to user's org
     if (invitation.orgId !== userRecord.orgId) {
-      throw new ConvexError("Invitation does not belong to your organization");
+      throw new ConvexError('Invitation does not belong to your organization');
     }
 
     const isExistingMember = await ctx.runQuery(internal.invitations.internal.isOrgMemberByEmail, {
@@ -217,20 +218,23 @@ export const resendInvitation = action({
     const counts = await ctx.runQuery(internal.invitations.internal.getOrgUserCounts, {
       orgId: userRecord.orgId,
     });
+    const subscription = await ctx.runQuery(api.polar.getCurrentSubscription, {});
+    const limits = getLimitsForSubscription({
+      status: subscription?.status ?? 'inactive',
+      productKey: subscription?.productKey,
+    });
 
-    if (invitation.role === "staff") {
+    if (invitation.role === 'staff') {
       // Subtract 1 because we're replacing the existing pending invitation
-      if (counts.staffCount + counts.pendingStaffCount - 1 >= org.maxStaff) {
+      if (counts.staffCount + counts.pendingStaffCount - 1 >= limits.maxStaff) {
         throw new ConvexError(
-          `Staff limit reached (${org.maxStaff}). Upgrade your plan to invite more staff members.`
+          `Staff limit reached (${limits.maxStaff}). Upgrade your plan to invite more staff members.`,
         );
       }
-    } else if (invitation.role === "client") {
+    } else if (invitation.role === 'client') {
       // Subtract 1 because we're replacing the existing pending invitation
-      if (counts.clientCount + counts.pendingClientCount - 1 >= org.maxClients) {
-        throw new ConvexError(
-          `Client limit reached (${org.maxClients}). Upgrade your plan to invite more clients.`
-        );
+      if (counts.clientCount + counts.pendingClientCount - 1 >= limits.maxClients) {
+        throw new ConvexError(`Client limit reached (${limits.maxClients}). Upgrade your plan to invite more clients.`);
       }
     }
 
@@ -241,7 +245,7 @@ export const resendInvitation = action({
       let requiresRevoke = true;
       try {
         const workosInvitation = await workos.userManagement.getInvitation(invitation.workosInvitationId);
-        requiresRevoke = workosInvitation.state === "pending";
+        requiresRevoke = workosInvitation.state === 'pending';
       } catch (error) {
         // Missing/terminal invitation in WorkOS is fine; we'll still attempt a fresh invite.
         if (!isInvitationTerminalStateError(error)) {
@@ -271,10 +275,10 @@ export const resendInvitation = action({
         });
       } catch (error) {
         const status = getWorkOSErrorStatus(error);
-        const message = error instanceof Error ? error.message.toLowerCase() : "";
+        const message = error instanceof Error ? error.message.toLowerCase() : '';
 
         // User already joined or cannot be re-invited in current state -> local row is stale.
-        if (status === 409 || status === 422 || message.includes("already a member")) {
+        if (status === 409 || status === 422 || message.includes('already a member')) {
           await ctx.runMutation(internal.invitations.internal.deletePendingInvitation, {
             invitationId: args.invitationId,
           });
@@ -296,7 +300,7 @@ export const resendInvitation = action({
 
       return { success: true, resent: true, cleanedUp: false };
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unknown error";
+      const message = error instanceof Error ? error.message : 'Unknown error';
       throw new ConvexError(`Failed to resend invitation: ${message}`);
     }
   },
